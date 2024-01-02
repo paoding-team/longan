@@ -2,11 +2,7 @@ package dev.paoding.longan.data;
 
 import dev.paoding.longan.data.jpa.Data;
 import dev.paoding.longan.data.jpa.Database;
-import dev.paoding.longan.data.jpa.Sorting;
 import dev.paoding.longan.data.jpa.SqlParser;
-
-import java.util.List;
-import java.util.StringJoiner;
 
 @Data(alias = "分页对象")
 public class Pageable {
@@ -26,7 +22,6 @@ public class Pageable {
      * 是否倒序排列，默认为 true
      */
     private boolean desc;
-    private List<Sorting> sorts;
 
     public Pageable(int page) {
         this(page, 20, "id", true);
@@ -87,14 +82,6 @@ public class Pageable {
         this.size = size;
     }
 
-    public List<Sorting> getSorts() {
-        return sorts;
-    }
-
-    public void setSorts(List<Sorting> sorts) {
-        this.sorts = sorts;
-    }
-
     public String toSql() {
         StringBuilder sb = new StringBuilder();
         if (sort != null) {
@@ -103,12 +90,6 @@ public class Pageable {
             }
             sb.append(" order by ").append(SqlParser.toColumnName(sort));
             sb.append(desc ? " desc" : " asc");
-        } else if (sorts != null && sorts.size() > 0) {
-            StringJoiner stringJoiner = new StringJoiner(", ");
-            for (Sorting sorting : sorts) {
-                stringJoiner.add(sorting.toSql());
-            }
-            sb.append(" order by ").append(stringJoiner);
         }
 
         if (Database.isPostgresql()) {
