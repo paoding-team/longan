@@ -1,12 +1,9 @@
 package dev.paoding.longan.util;
 
-import dev.paoding.longan.service.SystemException;
-
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,19 +66,13 @@ public class TypeUtils {
         }
     }
 
-    public static <T> List<String> getEnumValues(Class<T> enumType) {
-        List<String> values = new ArrayList<>();
-        try {
-            Method method = enumType.getDeclaredMethod("values");
-            T[] array = (T[]) method.invoke(null, null);
-            for (int i = 0; i < array.length; i++) {
-                values.add(array[i].toString());
-            }
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
-            throw new SystemException(e.getMessage());
-        }
-        return values;
+    public static List<String> getEnumValues(Class<?> enumType) {
+        return Arrays.stream((Enum<?>[]) enumType.getEnumConstants())
+                .map(Enum::name)
+                .toList();
+//        return EnumSet.allOf(enumType).stream()
+//                .map(Enum::name)
+//                .collect(Collectors.toList());
     }
 
 }
