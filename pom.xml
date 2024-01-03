@@ -94,13 +94,6 @@
             <version>1.4.14</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.logging.log4j</groupId>-->
-        <!--            <artifactId>log4j-slf4j-impl</artifactId>-->
-        <!--            <version>2.20.0</version>-->
-        <!--        </dependency>-->
-
-
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
@@ -155,12 +148,6 @@
             <artifactId>netty-transport-native-kqueue</artifactId>
             <version>${netty.version}</version>
             <classifier>osx-x86_64</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-            <version>9.6</version>
         </dependency>
 
         <dependency>
