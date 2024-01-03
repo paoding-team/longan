@@ -2,10 +2,11 @@ package dev.paoding.longan.core;
 
 import dev.paoding.longan.annotation.Mapping;
 import dev.paoding.longan.annotation.RpcService;
+import dev.paoding.longan.channel.Channel;
 import dev.paoding.longan.channel.http.*;
 import dev.paoding.longan.doc.DocumentService;
 import dev.paoding.longan.channel.dubbo.DubboInterceptor;
-import dev.paoding.longan.channel.dubbo.LonganFilter;
+import dev.paoding.longan.channel.dubbo.DubboFilter;
 import dev.paoding.longan.data.Entity;
 import dev.paoding.longan.channel.http.WebSocketListener;
 import dev.paoding.longan.util.StringUtils;
@@ -125,7 +126,7 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
             ServiceConfig<Object> serviceConfig = new ServiceConfig<>();
             serviceConfig.setInterface(serviceInterface);
             serviceConfig.setRef(context.getBean(serviceClass));
-            serviceConfig.setFilter(LonganFilter.class.getName());
+            serviceConfig.setFilter(DubboFilter.class.getName());
             serviceConfig.export();
         }
     }
