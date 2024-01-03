@@ -9,7 +9,6 @@ import dev.paoding.longan.service.ConstraintViolationException;
 import dev.paoding.longan.validation.BeanCleaner;
 import dev.paoding.longan.validation.BeanValidator;
 import org.apache.dubbo.rpc.RpcException;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
 public class DubboInterceptor extends ResponseFilter {
     private final Map<String, List<MethodInvocation>> methodWrapMap = new ConcurrentHashMap<>();
     private final BeanValidator beanValidator = new BeanValidator();

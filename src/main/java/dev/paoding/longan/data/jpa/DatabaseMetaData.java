@@ -179,7 +179,7 @@ public class DatabaseMetaData {
 
 
     private void execute(String sql) {
-        SqlLogger.info(sql);
+        SqlLogger.log(sql);
         try {
             connection.createStatement().execute(sql);
         } catch (SQLException e) {

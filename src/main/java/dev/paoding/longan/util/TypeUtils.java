@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TypeUtils {
-    private static Map<String, Field> nameFieldMapCache = new ConcurrentHashMap<>();
-    private static Map<Class<?>, List<Field>> typeFieldMapCache = new ConcurrentHashMap<>();
+    private static final Map<String, Field> nameFieldMapCache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, List<Field>> typeFieldMapCache = new ConcurrentHashMap<>();
 
     public static String getLowerSimpleName(Class<?> type) {
         return StringUtils.underline(type.getSimpleName()).toLowerCase();

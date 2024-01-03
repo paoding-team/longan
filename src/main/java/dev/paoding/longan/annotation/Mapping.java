@@ -1,6 +1,6 @@
 package dev.paoding.longan.annotation;
 
-import dev.paoding.longan.channel.http.Channel;
+import dev.paoding.longan.channel.Channel;
 import dev.paoding.longan.channel.http.RequestMethod;
 import dev.paoding.longan.channel.http.ResponseType;
 import org.springframework.core.annotation.AliasFor;

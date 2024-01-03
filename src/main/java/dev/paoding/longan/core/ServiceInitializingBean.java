@@ -32,7 +32,6 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
     private HttpServiceInvoker httpServiceInvoker;
     @Resource
     private ApplicationContext context;
-    @Resource
     private DubboInterceptor dubboInterceptor;
     @Resource
     private WebSocketListenerHandler webSocketListenerHandler;
@@ -58,6 +57,9 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
         String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors((ListableBeanFactory) beanFactory, WebSocketListener.class);
         for (String candidateName : candidateNames) {
             webSocketListenerHandler.addWebSocketListener((WebSocketListener) beanFactory.getBean(candidateName));
+        }
+        if (dubboEnabled) {
+            this.dubboInterceptor = new DubboInterceptor();
         }
     }
 

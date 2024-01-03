@@ -1,5 +1,7 @@
 package dev.paoding.longan.data.jpa;
 
+import com.github.vertical_blank.sqlformatter.SqlFormatter;
+import dev.paoding.longan.util.GsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -17,12 +19,14 @@ public class SqlLogger {
 
     public static void log(String sql) {
         if (showSql) {
-            logger.info("\n" + sql);
+            logger.info("statement\n{}", SqlFormatter.format(sql));
         }
     }
 
-    public static void info(String sql) {
-        logger.info(sql);
+    public static void log(Map<String, ?> paramMap) {
+        if (showSql) {
+            logger.info("parameter\n{}", GsonUtils.toJson(paramMap));
+        }
     }
 
     public static void log(SqlParameterSource paramSource) {
@@ -31,8 +35,9 @@ public class SqlLogger {
             for (String name : paramSource.getParameterNames()) {
                 paramMap.put(name, paramSource.getValue(name));
             }
-            log(paramMap.toString());
+            log(paramMap);
         }
     }
+
 
 }

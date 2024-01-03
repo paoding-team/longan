@@ -138,7 +138,7 @@ public class JdbcSession {
 
     private void log(Map<String, ?> paramMap) {
 //        String str = Joiner.on(", ").withKeyValueSeparator(" = ").join(paramMap);
-        SqlLogger.log(paramMap.toString());
+        SqlLogger.log(paramMap);
     }
 
     private void log(SqlParameterSource paramSource) {

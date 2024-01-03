@@ -3,7 +3,7 @@ package dev.paoding.longan.service;
 import dev.paoding.longan.core.MethodInvocation;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public abstract class ServiceException extends RuntimeException {
+public class ServiceException extends RuntimeException {
     protected String code;
     protected MethodInvocation methodInvocation;
 
@@ -31,6 +31,8 @@ public abstract class ServiceException extends RuntimeException {
         this.methodInvocation = methodInvocation;
     }
 
-    public abstract HttpResponseStatus getHttpResponseStatus();
+    public HttpResponseStatus getHttpResponseStatus() {
+        return HttpResponseStatus.INTERNAL_SERVER_ERROR;
+    }
 
 }

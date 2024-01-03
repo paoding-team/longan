@@ -3,8 +3,11 @@ package dev.paoding.longan.core;
 import dev.paoding.longan.annotation.RpcService;
 import dev.paoding.longan.channel.http.HandlerInterceptor;
 import dev.paoding.longan.data.Entity;
+import dev.paoding.longan.data.jpa.JpaRepositoryProxy;
 import dev.paoding.longan.data.jpa.MetaTableFactory;
 import dev.paoding.longan.data.jpa.JpaRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -18,6 +21,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class ClassPathBeanScanner {
+    private static final Logger logger = LoggerFactory.getLogger(ClassPathBeanScanner.class);
     private final static List<Class<?>> allEentityClassList = new ArrayList<>();
     private final static List<Class<?>> moduleEentityClassList = new ArrayList<>();
     private final static List<Class<?>> repositoryClassList = new ArrayList<>();
@@ -54,6 +58,9 @@ public class ClassPathBeanScanner {
                 Resource[] resources = resolver.getResources(pattern);
                 for (Resource resource : resources) {
                     Class<?> clazz = loadClass(classLoader, metadataReaderFactory, resource);
+                    if (clazz == null) {
+                        continue;
+                    }
                     if (!allCache.contains(clazz.getName())) {
                         allCache.add(clazz.getName());
                         if (clazz.isAnnotationPresent(Entity.class)) {
@@ -62,7 +69,7 @@ public class ClassPathBeanScanner {
                     }
                     if (!moduleCache.contains(clazz.getName())) {
                         moduleCache.add(clazz.getName());
-                        if (JpaRepository.class.isAssignableFrom(clazz)) {
+                        if (JpaRepository.class.isAssignableFrom(clazz) && JpaRepository.class != clazz && JpaRepositoryProxy.class != clazz) {
                             Type type = ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
                             Class<?> modelClass = (Class<?>) type;
                             if (modelClass.isAnnotationPresent(Entity.class)) {
@@ -120,7 +127,7 @@ public class ClassPathBeanScanner {
             String name = reader.getClassMetadata().getClassName();
             return Class.forName(name, false, loader);
         } catch (NoClassDefFoundError | IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 }

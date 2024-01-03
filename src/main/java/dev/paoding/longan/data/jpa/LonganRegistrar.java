@@ -1,8 +1,10 @@
 package dev.paoding.longan.data.jpa;
 
-import dev.paoding.longan.core.ClassPathBeanScanner;
 import dev.paoding.longan.channel.http.DefaultHandlerInterceptor;
 import dev.paoding.longan.channel.http.HandlerInterceptor;
+import dev.paoding.longan.core.ClassPathBeanScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -24,8 +26,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
-//https://zhuanlan.zhihu.com/p/612825647  万字详谈SpringBoot多数据源以及事务处理
 public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware {
+    private final Logger logger = LoggerFactory.getLogger(LonganRegistrar.class);
     private BeanFactory beanFactory;
 
     @Override
@@ -34,7 +36,7 @@ public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
 //        classPathBeanDefinitionScanner.addIncludeFilter(new AssignableTypeFilter(Repository.class));
 //        for (BeanDefinition candidateComponent : classPathBeanDefinitionScanner.findCandidateComponents("dev")) {
 //        }
-
+        logger.info("register jpa repository");
         DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) beanFactory;
 //        defaultListableBeanFactory.addBeanPostProcessor(new BeanPostProcessor() {
 //            @Override
@@ -87,6 +89,7 @@ public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
             registry.registerBeanDefinition(HandlerInterceptor.class.getSimpleName(), beanDefinition);
         }
 
+
         RepositoryPostProcessor repositoryPostProcessor = beanFactory.getBean(RepositoryPostProcessor.class);
         registryRepository(registry, repositoryPostProcessor, Database.getType());
     }
@@ -95,7 +98,7 @@ public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
         List<Class<?>> repositoryClasses = ClassPathBeanScanner.getRepositoryClassList();
         for (Class<?> repositoryClass : repositoryClasses) {
             if (repositoryClass.isInterface()) {
-                if (JpaRepository.class.isAssignableFrom(repositoryClass) && JpaRepository.class != repositoryClass) {
+                if (JpaRepository.class.isAssignableFrom(repositoryClass)) {
                     Type type = ((ParameterizedType) repositoryClass.getGenericInterfaces()[0]).getActualTypeArguments()[0];
                     JpaRepositoryProxy<?, ? extends Serializable> repositoryProxy = new JpaRepositoryProxy<>((Class<?>) type);
                     repositoryProxy.setDatabase(database);
