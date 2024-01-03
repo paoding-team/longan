@@ -2,7 +2,7 @@ package dev.paoding.longan.channel.dubbo;
 
 import org.apache.dubbo.rpc.*;
 
-public class LonganFilter implements Filter {
+public class DubboFilter implements Filter {
     private DubboInterceptor dubboInterceptor;
 
     public void setDubboInterceptor(DubboInterceptor dubboInterceptor) {
