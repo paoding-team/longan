@@ -137,7 +137,7 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
         String servicePath = serviceClass.getAnnotation(RpcService.class).path();
         if (servicePath.isEmpty()) {
             Class<?> modelClass = getModelClass(serviceClass);
-            servicePath = StringUtils.lowerFirst(modelClass.getSimpleName());
+            servicePath = "/" + StringUtils.lowerFirst(modelClass.getSimpleName());
         }
         String methodPath = mapping.path();
         if (methodPath.isEmpty()) {
