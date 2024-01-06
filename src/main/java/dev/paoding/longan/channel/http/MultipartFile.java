@@ -46,4 +46,9 @@ public class MultipartFile {
     public File getFile() throws IOException {
         return fileUpload.getFile();
     }
+
+    @Override
+    public String toString() {
+        return getFilename();
+    }
 }

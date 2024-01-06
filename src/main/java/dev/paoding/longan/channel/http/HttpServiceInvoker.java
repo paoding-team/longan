@@ -6,8 +6,8 @@ import dev.paoding.longan.core.MethodDescriptor;
 import dev.paoding.longan.core.MethodInvocation;
 import dev.paoding.longan.core.Result;
 import dev.paoding.longan.core.ServiceInvoker;
-import dev.paoding.longan.service.*;
 import dev.paoding.longan.data.Between;
+import dev.paoding.longan.service.*;
 import dev.paoding.longan.util.GsonUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.util.CharsetUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+@Slf4j
 @Component
 public class HttpServiceInvoker extends ServiceInvoker {
     private final Map<HttpMethod, List<MethodInvocation>> dynamicMethodMap = new ConcurrentHashMap<>();
@@ -106,6 +108,7 @@ public class HttpServiceInvoker extends ServiceInvoker {
         Object[] arguments;
         if (httpMethod == HttpMethod.GET) {
             arguments = parseArguments(methodInvocation, httpDataEntity);
+            return invoke(methodInvocation, arguments);
         } else if (httpMethod == HttpMethod.POST) {
             if (contentType == null) {
                 throw new UnsupportedMediaTypeException(methodInvocation.getResponseType());
@@ -114,29 +117,39 @@ public class HttpServiceInvoker extends ServiceInvoker {
             if (isApplicationJson) {
                 if (methodInvocation.hasRequestBody()) {
                     arguments = parseArguments(methodInvocation, httpDataEntity, true, httpRequest.content());
+                    return invoke(methodInvocation, arguments);
                 } else {
                     String body = httpRequest.content().toString(CharsetUtil.UTF_8);
                     Map<String, JsonElement> jsonElementMap = GsonUtils.toMap(body);
                     arguments = parseArguments(methodInvocation, httpDataEntity, jsonElementMap);
+                    return invoke(methodInvocation, arguments);
                 }
             } else if (HttpPostRequestDecoder.isMultipart(httpRequest)) {
-                parseMultipartFormData(httpRequest, httpDataEntity);
-                arguments = parseArguments(methodInvocation, httpDataEntity);
+                HttpDataFactory factory = new DefaultHttpDataFactory(true);
+                HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(factory, httpRequest);
+                try {
+                    parseMultipartFormData(decoder, httpDataEntity);
+                    arguments = parseArguments(methodInvocation, httpDataEntity);
+                    return invoke(methodInvocation, arguments);
+                } finally {
+                    decoder.destroy();
+                }
             } else if (contentType.equals(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())) {
                 parseFormUrlEncoded(httpRequest, httpDataEntity);
                 arguments = parseArguments(methodInvocation, httpDataEntity);
+                return invoke(methodInvocation, arguments);
             } else {
                 arguments = parseArguments(methodInvocation, httpDataEntity, false, httpRequest.content());
+                return invoke(methodInvocation, arguments);
             }
         } else {
             throw new MethodNotAllowedException(methodInvocation.getResponseType());
         }
 
-        return invoke(methodInvocation, arguments);
     }
 
     private boolean isApplicationJson(String contentType) {
-        return contentType.equals(HttpHeaderValues.APPLICATION_JSON.toString());
+        return contentType != null && contentType.startsWith(HttpHeaderValues.APPLICATION_JSON.toString());
     }
 
     private Object[] parseArguments(MethodInvocation methodInvocation, HttpDataEntity httpDataEntity, Map<String, JsonElement> jsonElementMap) {
@@ -205,11 +218,9 @@ public class HttpServiceInvoker extends ServiceInvoker {
         return httpDataEntity;
     }
 
-    private void parseMultipartFormData(FullHttpRequest httpRequest, HttpDataEntity httpDataEntity) {
-        HttpDataFactory factory = new DefaultHttpDataFactory(true);
-        HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(factory, httpRequest);
+    private void parseMultipartFormData(HttpPostMultipartRequestDecoder requestDecoder, HttpDataEntity httpDataEntity) {
         try {
-            List<InterfaceHttpData> httpDataList = decoder.getBodyHttpDatas();
+            List<InterfaceHttpData> httpDataList = requestDecoder.getBodyHttpDatas();
             for (InterfaceHttpData data : httpDataList) {
                 if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
                     FileUpload fileUpload = (FileUpload) data;
@@ -223,8 +234,6 @@ public class HttpServiceInvoker extends ServiceInvoker {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } finally {
-            decoder.destroy();
         }
     }
 

@@ -58,22 +58,24 @@ public class HttpServiceHandler extends AbstractServiceHandler {
                 return writeText(httpVersion, HttpResponseStatus.FORBIDDEN, "Forbidden " + request.uri() + " is denied");
             }
         } catch (HttpRequestException e) {
+            logger.info("A HttpRequestException occurred in the request", e);
             if (APPLICATION_JSON.toString().equals(e.getResponseType())) {
                 return writeJson(httpVersion, e.getHttpResponseStatus(), ExceptionResult.of(e));
             } else {
                 return writeText(httpVersion, e.getHttpResponseStatus(), e.getMessage());
             }
         } catch (ServiceException e) {
+            logger.info("A ServiceException occurred in the request", e);
             MethodInvocation methodInvocation = e.getMethodInvocation();
-            if (methodInvocation.getResponseType().equals(APPLICATION_JSON.toString())) {
+            if (APPLICATION_JSON.toString().equals(methodInvocation.getResponseType())) {
                 return writeJson(httpVersion, e.getHttpResponseStatus(), ExceptionResult.of(e));
             } else {
                 return writeText(httpVersion, e.getHttpResponseStatus(), e.getMessage());
             }
         } catch (InternalServerException e) {
-            logger.info("An error occurred in the request", e);
+            logger.info("A InternalServerException occurred in the request", e);
             MethodInvocation methodInvocation = e.getMethodInvocation();
-            if (methodInvocation.getResponseType().equals(APPLICATION_JSON.toString())) {
+            if (APPLICATION_JSON.toString().equals(methodInvocation.getResponseType())) {
                 return writeJson(httpVersion, e.getHttpResponseStatus(), ExceptionResult.of(e));
             } else {
                 return writeText(httpVersion, e.getHttpResponseStatus(), e.getMessage());

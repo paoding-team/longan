@@ -650,4 +650,12 @@ public class HttpDataEntity {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "HttpDataEntity{" +
+                "textMap=" + textMap +
+                ", fileMap=" + fileMap +
+                '}';
+    }
 }

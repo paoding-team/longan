@@ -1,10 +1,10 @@
 package dev.paoding.longan.service;
 
+import dev.paoding.longan.channel.http.HttpRequestException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 
-public class InvalidTokenException extends ServiceException {
-    private static final long serialVersionUID = 0L;
+public class InvalidTokenException extends HttpRequestException {
 
     public InvalidTokenException(String message) {
         super(message);
