@@ -36,7 +36,7 @@ public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
 //        classPathBeanDefinitionScanner.addIncludeFilter(new AssignableTypeFilter(Repository.class));
 //        for (BeanDefinition candidateComponent : classPathBeanDefinitionScanner.findCandidateComponents("dev")) {
 //        }
-        logger.info("register jpa repository");
+        logger.info("Register jpa repository");
         DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) beanFactory;
 //        defaultListableBeanFactory.addBeanPostProcessor(new BeanPostProcessor() {
 //            @Override

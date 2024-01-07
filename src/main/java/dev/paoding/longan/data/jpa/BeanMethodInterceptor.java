@@ -30,7 +30,6 @@ public class BeanMethodInterceptor<T> implements MethodInterceptor, BeanProxy {
         this.one = type;
         EntityUtils.setId(bean, id, metaTable.getPrimaryKey().getType());
         this.jdbcSession = jdbcSession;
-
     }
 
     @Override

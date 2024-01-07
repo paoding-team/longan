@@ -9,7 +9,7 @@
     <version>5.0.0-SNAPSHOT</version>
 
     <name>Longan</name>
-    <description>A lightweight Java framework.</description>
+    <description>A lightweight java framework.</description>
     <url>https://github.com/paoding-team/longan</url>
 
     <licenses>
@@ -320,6 +320,5 @@
             </build>
         </profile>
     </profiles>
-
 
 </project>

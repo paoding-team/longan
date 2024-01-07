@@ -4,6 +4,7 @@ import dev.paoding.longan.util.EntityUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.proxy.Enhancer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,23 +16,33 @@ public class BeanFactory {
     }
 
     public static <T> T create(Class<T> clazz, Object id) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(clazz);
-        enhancer.setUseCache(true);
-        enhancer.setInterceptDuringConstruction(false);
-        enhancer.setInterfaces(new Class[]{BeanProxy.class});
-        enhancer.setCallback(new BeanMethodInterceptor<T>(jdbcSession, clazz, id));
-        return (T) enhancer.create();
+        if (MetaTableFactory.contains(clazz)) {
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(clazz);
+            enhancer.setUseCache(true);
+            enhancer.setInterceptDuringConstruction(false);
+            enhancer.setInterfaces(new Class[]{BeanProxy.class});
+            enhancer.setCallback(new BeanMethodInterceptor<T>(jdbcSession, clazz, id));
+            return (T) enhancer.create();
+        } else {
+            Object bean = BeanUtils.instantiateClass(clazz);
+            EntityUtils.setId(bean, id);
+            return (T) bean;
+        }
     }
 
     public static <T> List<T> createList(Class<?> one, Class<T> many, Role role, String joinFile, Object bean) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(List.class);
-        enhancer.setUseCache(true);
-        enhancer.setInterceptDuringConstruction(false);
-        enhancer.setInterfaces(new Class[]{List.class});
-        enhancer.setCallback(new ListMethodInterceptor<T>(jdbcSession, one, many, role, joinFile, bean));
-        return (List<T>) enhancer.create();
+        if (MetaTableFactory.contains(many)) {
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(List.class);
+            enhancer.setUseCache(true);
+            enhancer.setInterceptDuringConstruction(false);
+            enhancer.setInterfaces(new Class[]{List.class});
+            enhancer.setCallback(new ListMethodInterceptor<T>(jdbcSession, one, many, role, joinFile, bean));
+            return (List<T>) enhancer.create();
+        } else {
+            return null;
+        }
     }
 
     public static void refresh(Object bean) {

@@ -8,19 +8,26 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MetaTableFactory {
-    private static final Map<String, MetaTable<?>> cache = new ConcurrentHashMap<>();
 //    private static final Map<String, Map<String, ManyToManyPoint>> manyToManyMap = new HashMap<>();
 //    private static final Map<String, Map<String, OneToManyPoint>> oneToManyMap = new HashMap<>();
+    private static final Map<String, MetaTable<?>> META_TABLE_MAP = new ConcurrentHashMap<>();
 
 
+    @SuppressWarnings("unchecked")
     public static <T> MetaTable<T> get(Class<T> clazz) {
         String name = getName(clazz);
-        return (MetaTable<T>) cache.get(name);
+        return (MetaTable<T>) META_TABLE_MAP.get(name);
     }
 
+    public static boolean contains(Class<?> clazz) {
+        String name = getName(clazz);
+        return META_TABLE_MAP.containsKey(name);
+    }
+
+    @SuppressWarnings("unchecked")
     public static <T> MetaTable<T> get(T bean) {
         String name = getName(bean.getClass());
-        return (MetaTable<T>) cache.get(name);
+        return (MetaTable<T>) META_TABLE_MAP.get(name);
     }
 
     private static <T> MetaTable<T> create(Class<T> clazz) {
@@ -34,7 +41,7 @@ public class MetaTableFactory {
 //                metaTable.addManyToMany(key, null, manyToManyPoint, manyToManyPoint.getSlaver());
 //            }
 //        }
-        cache.put(name, metaTable);
+        META_TABLE_MAP.put(name, metaTable);
         return metaTable;
     }
 
@@ -97,7 +104,7 @@ public class MetaTableFactory {
 //    }
 
 
-    public static void load( ) {
+    public static void load() {
         List<Class<?>> entityList = ClassPathBeanScanner.getModuleEntityClassList();
         for (Class<?> classType : entityList) {
             if (classType.isAnnotationPresent(Entity.class)) {

@@ -5,9 +5,12 @@ import dev.paoding.longan.service.SystemException;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EntityUtils {
+    private static final Map<Class<?>, Field> FIELD_MAP = new HashMap<>();
 
     public static Object get(Field field, Object object) {
         try {
@@ -22,6 +25,31 @@ public class EntityUtils {
         try {
             return method.invoke(bean);
         } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void setId(Object bean, Object id) {
+        Class<?> type = bean.getClass();
+        if (FIELD_MAP.containsKey(type)) {
+            set(FIELD_MAP.get(type), bean, id);
+        } else {
+            Field[] fields = type.getDeclaredFields();
+            for (Field field : fields) {
+                if (field.isAnnotationPresent(Id.class) || field.getName().equals("id")) {
+                    field.setAccessible(true);
+                    set(field, bean, id);
+                    FIELD_MAP.put(type, field);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void set(Field field, Object bean, Object id) {
+        try {
+            field.set(bean, id);
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
