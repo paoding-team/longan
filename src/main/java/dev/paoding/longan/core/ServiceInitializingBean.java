@@ -53,13 +53,14 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
     public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
         if (beanFactory instanceof LonganListableBeanFactory longanListableBeanFactory) {
             dubboEnabled = longanListableBeanFactory.isDubboEnabled();
+            if (dubboEnabled) {
+                this.dubboInterceptor = new DubboInterceptor();
+                longanListableBeanFactory.registerSingleton("dubboInterceptor", this.dubboInterceptor);
+            }
         }
         String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors((ListableBeanFactory) beanFactory, WebSocketListener.class);
         for (String candidateName : candidateNames) {
             webSocketListenerHandler.addWebSocketListener((WebSocketListener) beanFactory.getBean(candidateName));
-        }
-        if (dubboEnabled) {
-            this.dubboInterceptor = new DubboInterceptor();
         }
     }
 
