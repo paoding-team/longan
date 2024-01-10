@@ -33,7 +33,7 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
     @Resource
     private WebSocketListenerHandler webSocketListenerHandler;
     @Resource
-    private HttpServiceInvoker httpServiceInvoker;
+    private MethodInvocationStore methodInvocationStore;
     @Resource
     private ApplicationContext context;
     @Resource
@@ -195,7 +195,7 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
                 }
             }
             httpDynamicMappingList.add(path);
-            httpServiceInvoker.addDynamicMethod(service, methodDescriptor, requestMethod, path);
+            methodInvocationStore.addDynamicMethod(service, methodDescriptor, requestMethod, path);
         } else {
             for (String existedMapping : httpStaticMappingList) {
                 if (existedMapping.endsWith(path)) {
@@ -208,7 +208,7 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
                 }
             }
             httpStaticMappingList.add(path);
-            httpServiceInvoker.addStaticMethod(service, methodDescriptor, requestMethod, path);
+            methodInvocationStore.addStaticMethod(service, methodDescriptor, requestMethod, path);
         }
     }
 

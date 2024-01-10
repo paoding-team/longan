@@ -25,7 +25,7 @@ public class DubboInterceptor extends ResponseFilter {
     public void put(Method method, String mapping, MethodDescriptor methodDescriptor) {
         MethodInvocation methodInvocation = new MethodInvocation();
         methodInvocation.setMethod(method);
-        methodInvocation.setMapping(mapping);
+        methodInvocation.setPath(mapping);
         methodInvocation.setLineNumber(methodDescriptor.getLineNumber());
 
         if (!methodWrapMap.containsKey(mapping)) {

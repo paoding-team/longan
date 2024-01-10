@@ -34,76 +34,35 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 public class HttpServiceInvoker extends ServiceInvoker {
-    private final Map<HttpMethod, List<MethodInvocation>> dynamicMethodMap = new ConcurrentHashMap<>();
-    private final Map<HttpMethod, Map<String, MethodInvocation>> staticMethodMap = new ConcurrentHashMap<>();
     private final AntPathMatcher matcher = new AntPathMatcher();
 
-    {
-        for (RequestMethod requestMethod : RequestMethod.values()) {
-            dynamicMethodMap.put(HttpMethod.valueOf(requestMethod.name()), new ArrayList<>());
-            staticMethodMap.put(HttpMethod.valueOf(requestMethod.name()), new ConcurrentHashMap<>());
-        }
-    }
+//    private String[] parseURI(String uri) {
+//        uri = URLDecoder.decode(uri, StandardCharsets.UTF_8);
+//        int i = uri.indexOf("?");
+//        if (i > 0) {
+//            return new String[]{uri.substring(0, i), uri.substring(i + 1)};
+//        } else {
+//            return new String[]{uri};
+//        }
+//    }
 
-    public void addStaticMethod(Object service, MethodDescriptor methodDescriptor, RequestMethod requestMethod, String mapping) {
-        MethodInvocation methodInvocation = createMethodWrap(service, methodDescriptor, mapping);
-        staticMethodMap.get(HttpMethod.valueOf(requestMethod.name())).put(mapping, methodInvocation);
-    }
+    public Result invokeService(MethodInvocation methodInvocation, String path, String query, FullHttpRequest httpRequest) throws SystemException {
+//        String uri = httpRequest.uri().substring(4);
+//        String[] array = parseURI(uri);
+//        String path = array[0];
+//        String query = null;
+//        if (array.length > 1) {
+//            query = array[1];
+//        }
 
-    public void addDynamicMethod(Object service, MethodDescriptor methodDescriptor, RequestMethod requestMethod, String mapping) {
-        MethodInvocation methodInvocation = createMethodWrap(service, methodDescriptor, mapping);
-        dynamicMethodMap.get(HttpMethod.valueOf(requestMethod.name())).add(methodInvocation);
-    }
-
-    private MethodInvocation createMethodWrap(Object service, MethodDescriptor methodDescriptor, String mapping) {
-        MethodInvocation methodInvocation = new MethodInvocation();
-        methodInvocation.setService(service);
-        methodInvocation.setMapping(mapping);
-        methodInvocation.setMethod(methodDescriptor.getMethod());
-        methodInvocation.setLineNumber(methodDescriptor.getLineNumber());
-        return methodInvocation;
-    }
-
-    private MethodInvocation findMethodInvocation(HttpMethod httpMethod, String path) {
-        if (staticMethodMap.get(httpMethod).containsKey(path)) {
-            return staticMethodMap.get(httpMethod).get(path);
-        }
-        for (MethodInvocation methodInvocation : dynamicMethodMap.get(httpMethod)) {
-            String mapping = methodInvocation.getMapping();
-            if (matcher.match(mapping, path)) {
-                return methodInvocation;
-            }
-        }
-        return null;
-    }
-
-    private String[] parseURI(String uri) {
-        uri = URLDecoder.decode(uri, StandardCharsets.UTF_8);
-        int i = uri.indexOf("?");
-        if (i > 0) {
-            return new String[]{uri.substring(0, i), uri.substring(i + 1)};
-        } else {
-            return new String[]{uri};
-        }
-    }
-
-    public Result invokeService(FullHttpRequest httpRequest) throws SystemException {
-        String uri = httpRequest.uri().substring(4);
-        String[] array = parseURI(uri);
-        String path = array[0];
-        String query = null;
-        if (array.length > 1) {
-            query = array[1];
-        }
-
-        MethodInvocation methodInvocation = findMethodInvocation(httpRequest.method(), path);
-        if (methodInvocation == null) {
-            throw new MethodNotFoundException(path + " not found");
-        }
+//        MethodInvocation methodInvocation = findMethodInvocation(httpRequest.method(), path);
+//        if (methodInvocation == null) {
+//            throw new MethodNotFoundException(path + " not found");
+//        }
 
         HttpMethod httpMethod = httpRequest.method();
         String contentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
-        HttpDataEntity httpDataEntity = parseQueryParameter(methodInvocation.getMapping(), path, query);
+        HttpDataEntity httpDataEntity = parseQueryParameter(methodInvocation.getPath(), path, query);
 
         Object[] arguments;
         if (httpMethod == HttpMethod.GET) {

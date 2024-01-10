@@ -17,7 +17,9 @@ public interface HttpRequest {
 
     String getMethod();
 
-    String getPathInfo();
+    String getUri();
+
+    String getPath();
 
     ByteBuf getContent();
 }

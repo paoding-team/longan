@@ -21,7 +21,7 @@ public class MethodInvocation extends ParameterValidator {
     private final Map<String, Param> paramMap = new HashMap<>();
     private Object service;
     private Method method;
-    private String mapping;
+    private String path;
     private int LineNumber;
     private String responseType;
     private boolean hasRequestBody;
@@ -156,11 +156,11 @@ public class MethodInvocation extends ParameterValidator {
         this.responseType = responseType;
     }
 
-    public String getMapping() {
-        return mapping;
+    public String getPath() {
+        return path;
     }
 
-    public void setMapping(String mapping) {
-        this.mapping = mapping;
+    public void setPath(String path) {
+        this.path = path;
     }
 }

@@ -19,6 +19,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_OCTET_STREAM;
 
@@ -29,13 +32,36 @@ public class HttpServiceHandler extends AbstractServiceHandler {
     private HandlerInterceptor handlerInterceptor;
     @Resource
     private HttpServiceInvoker httpServiceInvoker;
+    @Resource
+    private MethodInvocationStore methodInvocationStore;
 
-    public FullHttpResponse channelRead(ChannelHandlerContext ctx, FullHttpRequest request) {
-        HttpVersion httpVersion = request.protocolVersion();
-        HttpRequest httpRequest = new HttpRequestImpl(request);
+    private String[] parseURI(String uri) {
+        uri = URLDecoder.decode(uri, StandardCharsets.UTF_8);
+        int i = uri.indexOf("?");
+        if (i > 0) {
+            return new String[]{uri.substring(0, i), uri.substring(i + 1)};
+        } else {
+            return new String[]{uri};
+        }
+    }
+
+    public FullHttpResponse channelRead(ChannelHandlerContext ctx, FullHttpRequest fullHttpRequest) {
+        HttpVersion httpVersion = fullHttpRequest.protocolVersion();
+
         try {
+            String uri = fullHttpRequest.uri().substring(4);
+            String[] array = parseURI(uri);
+            String path = array[0];
+            String query = null;
+            if (array.length > 1) {
+                query = array[1];
+            }
+
+            MethodInvocation methodInvocation = methodInvocationStore.get(fullHttpRequest.method(), path);
+            HttpRequest httpRequest = new HttpRequestImpl(fullHttpRequest, methodInvocation.getPath());
+
             if (handlerInterceptor.preHandle(httpRequest)) {
-                Result result = httpServiceInvoker.invokeService(request);
+                Result result = httpServiceInvoker.invokeService(methodInvocation, path, query, fullHttpRequest);
                 AsciiString contentType = result.getType();
                 Object content = result.getValue();
                 if (content == null) {
@@ -55,7 +81,7 @@ public class HttpServiceHandler extends AbstractServiceHandler {
                     return write(httpVersion, HttpResponseStatus.OK, content.toString(), contentType);
                 }
             } else {
-                return writeText(httpVersion, HttpResponseStatus.FORBIDDEN, "Forbidden " + request.uri() + " is denied");
+                return writeText(httpVersion, HttpResponseStatus.FORBIDDEN, "Forbidden " + fullHttpRequest.uri() + " is denied");
             }
         } catch (HttpRequestException e) {
             logger.info("A HttpRequestException occurred in the request", e);

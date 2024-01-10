@@ -27,7 +27,7 @@ public class RpcServiceInvoker extends ServiceInvoker {
         MethodInvocation methodInvocation = new MethodInvocation();
         methodInvocation.setService(rpcService);
         methodInvocation.setMethod(method);
-        methodInvocation.setMapping(mapping);
+        methodInvocation.setPath(mapping);
         rpcMethodMap.put(mapping, methodInvocation);
     }
 

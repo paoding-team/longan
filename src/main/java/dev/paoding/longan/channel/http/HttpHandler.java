@@ -8,6 +8,7 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,22 +23,24 @@ import java.util.concurrent.ThreadFactory;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_PLAIN;
 
+@Slf4j
 @Component
 public class HttpHandler {
-    private final Logger logger = LoggerFactory.getLogger(HttpHandler.class);
-    private final ExecutorService executorService;
     @Resource
     private HttpServiceHandler httpServiceHandler;
     @Resource
     private DocServiceHandler docServiceHandler;
     @Value("${longan.http.cross-origin:false}")
     private Boolean enableCrossOrigin;
+    private static final String API_PREFIX = "/api/";
+    private static final String DOC_PREFIX = "/doc/";
+    private final ExecutorService executorService;
 
     {
         ThreadFactory threadFactory = Thread.ofVirtual().name("http-thread-", 0).uncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
-                logger.error(throwable.getMessage());
+                log.error(throwable.getMessage());
             }
         }).factory();
         executorService = Executors.newThreadPerTaskExecutor(threadFactory);
@@ -58,9 +61,9 @@ public class HttpHandler {
                     }
                 } else {
                     String uri = request.uri();
-                    if (uri.startsWith("/api/")) {
+                    if (uri.startsWith(API_PREFIX)) {
                         response = httpServiceHandler.channelRead(ctx, request);
-                    } else if (uri.startsWith("/doc/")) {
+                    } else if (uri.startsWith(DOC_PREFIX)) {
                         response = docServiceHandler.channelRead(ctx, request);
                     } else {
                         String message = "Not found " + uri;

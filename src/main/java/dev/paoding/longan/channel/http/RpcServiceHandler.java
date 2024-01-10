@@ -34,7 +34,7 @@ public class RpcServiceHandler extends AbstractServiceHandler {
             return writeText(httpVersion, HttpResponseStatus.METHOD_NOT_ALLOWED, message);
         }
 
-        HttpRequest httpRequest = new HttpRequestImpl(request);
+        HttpRequest httpRequest = new HttpRequestImpl(request,null);
         String uri = request.uri();
         uri = uri.substring(4);
         try {

@@ -6,10 +6,12 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import java.util.List;
 
 public class HttpRequestImpl implements HttpRequest {
-    private FullHttpRequest request;
+    private final FullHttpRequest request;
+    private String path;
 
-    public HttpRequestImpl(FullHttpRequest request) {
+    public HttpRequestImpl(FullHttpRequest request, String path) {
         this.request = request;
+        this.path = path;
     }
 
     @Override
@@ -43,8 +45,13 @@ public class HttpRequestImpl implements HttpRequest {
     }
 
     @Override
-    public String getPathInfo() {
+    public String getUri() {
         return request.uri();
+    }
+
+    @Override
+    public String getPath() {
+        return path;
     }
 
     @Override

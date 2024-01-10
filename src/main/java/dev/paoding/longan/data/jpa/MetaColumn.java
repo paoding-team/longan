@@ -13,6 +13,7 @@ public class MetaColumn {
     private String tableName;
     private String name;
     private String alias;
+    private String comment;
     private int length = 64;
     private boolean nullable;
     private boolean insertable;
@@ -52,6 +53,14 @@ public class MetaColumn {
 
     public Class<?> getType() {
         return type;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public Object getValue(Object object) {
@@ -223,6 +232,10 @@ public class MetaColumn {
             sb.append(" NOT NULL");
         }
 
+        if (comment != null && !comment.isBlank()) {
+            sb.append(" COMMENT '").append(comment).append("'");
+        }
+
         return sb.toString();
     }
 
@@ -287,6 +300,10 @@ public class MetaColumn {
             sb.append(" constraint pk_" + tableName + " primary key");
         } else if (!isNullable()) {
             sb.append(" not null");
+        }
+
+        if (comment != null && !comment.isBlank()) {
+            sb.append(" COMMENT '").append(comment).append("'");
         }
 
         return sb.toString();
