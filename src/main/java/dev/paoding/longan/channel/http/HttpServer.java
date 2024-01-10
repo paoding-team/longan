@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.concurrent.ThreadFactory;
 
@@ -43,13 +42,8 @@ public class HttpServer {
         workThreadFactory = new ThreadFactoryBuilder().setNameFormat("work-thread-%d").build();
     }
 
-    //todo 增加对Unix Domain Socket支持，ipc模式 https://github.com/netty/netty/pull/3344
-    @PostConstruct
     public void startup() throws Exception {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-        //探测内存泄漏点
-//        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.ADVANCED);
-        //调试时可以通过增加：-Dio.netty.leakDetectionLevel=PARANOID来保障对每次请求都做内存溢出检测
         String name = SystemPropertyUtil.get("os.name").trim();
         String version = SystemPropertyUtil.get("os.version");
         if (Epoll.isAvailable()) {

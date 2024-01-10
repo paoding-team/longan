@@ -2,9 +2,11 @@ package dev.paoding.longan.data.jpa;
 
 import com.google.common.base.Joiner;
 import dev.paoding.longan.core.ClassPathBeanScanner;
+import dev.paoding.longan.core.DataSourceConfig;
 import dev.paoding.longan.data.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -14,12 +16,14 @@ import java.lang.reflect.Type;
 import java.sql.*;
 import java.util.*;
 
-@Component
 public class DatabaseMetaData {
     private final Logger logger = LoggerFactory.getLogger(DatabaseMetaData.class);
     private Connection connection;
-    @Resource
     private JdbcSession jdbcSession;
+
+    public DatabaseMetaData(JdbcSession jdbcSession) {
+        this.jdbcSession = jdbcSession;
+    }
 
     public void populate() {
         try (Connection connection = jdbcSession.getConnection()) {
@@ -67,16 +71,16 @@ public class DatabaseMetaData {
                     String columnName = metaColumn.getName();
                     if (columnMap.containsKey(columnName)) {
                         if (!metaColumn.isNullable() && columnMap.get(columnName).isNullable()) {
-                            execute("alter table " + tableName + " alter column " + columnName + " set not null;");
+                            execute("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " SET NOT NULL;");
                         }
                         if (metaColumn.isNullable() && !columnMap.get(columnName).isNullable()) {
-                            execute("alter table " + tableName + " alter column " + columnName + " drop not null;");
+                            execute("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " DROP NOT NULL;");
                         }
 
                         String indexName = "idx_" + tableName + "_" + columnName;
                         if (metaColumn.isUnique()) {
                             if (indexMap.containsKey(indexName)) {
-                                execute("drop index if exists " + indexName);
+                                execute("DROP INDEX IF EXISTS " + indexName);
                             }
                             indexName = "u" + indexName;
                             if (!indexMap.containsKey(indexName)) {
@@ -84,7 +88,7 @@ public class DatabaseMetaData {
                             }
                         }
                     } else {
-                        execute("alter table " + tableName + " add " + metaColumn.generateText());
+                        execute("ALTER TABLE " + tableName + " ADD " + metaColumn.generateText());
                         if (metaColumn.isUnique()) {
                             createUniqueIndex(tableName, columnName);
                         }
@@ -114,7 +118,7 @@ public class DatabaseMetaData {
                         }
                         if (index.unique()) {
                             if (indexMap.containsKey(indexName)) {
-                                execute("drop index if exists " + indexName);
+                                execute("DROP INDEX IF EXISTS " + indexName);
                             }
                             indexName = "u" + indexName;
                             if (!indexMap.containsKey(indexName)) {
@@ -126,7 +130,7 @@ public class DatabaseMetaData {
                             }
                             indexName = "u" + indexName;
                             if (indexMap.containsKey(indexName)) {
-                                execute("drop index if exists " + indexName);
+                                execute("DROP INDEX IF EXISTS " + indexName);
                             }
                         }
                     }
@@ -138,12 +142,12 @@ public class DatabaseMetaData {
     private void createUniqueIndex(String tableName, String columnName) {
         String indexName = "uidx_" + tableName + "_" + columnName;
 //        execute("drop index if exists " + indexName);
-        execute("create unique index " + indexName + " on " + tableName + " (" + columnName + ")");
+        execute("CREATE UNIQUE INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
     }
 
     private void createIndex(String indexName, String tableName, String columnName, boolean unique) {
 //        execute("drop index if exists " + indexName);
-        execute("create" + (unique ? " unique" : "") + " index " + indexName + " on " + tableName + " (" + columnName + ")");
+        execute("CREATE" + (unique ? " UNIQUE" : "") + " INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
     }
 
     private void createLinkTable(java.sql.DatabaseMetaData databaseMetaData, String source, String target, String role) {
@@ -165,15 +169,15 @@ public class DatabaseMetaData {
 
         Map<String, MetaColumn> columnMap = getColumnMap(databaseMetaData, table);
         if (columnMap.isEmpty()) {
-            String createTableSql = "\ncreate table " + table + " (\n\t" +
-                    sourceId + " bigint,\n\t" +
-                    targetId + " bigint,\n\t" +
-                    "constraint pk_" + table +
-                    "\n\t\tprimary key (" + sourceId + ", " + targetId + ")\n)";
+            String createTableSql = "\nCREATE TABLE " + table + " (\n\t" +
+                    sourceId + " BIGINT,\n\t" +
+                    targetId + " BIGINT,\n\t" +
+                    "CONSTRAINT pk_" + table +
+                    "\n\t\tPRIMARY KEY (" + sourceId + ", " + targetId + ")\n)";
             execute(createTableSql);
 
-            execute("create index idx_" + table + "_" + sourceId + " on " + table + " (" + sourceId + ")");
-            execute("create index idx_" + table + "_" + targetId + " on " + table + " (" + targetId + ")");
+            execute("CREATE INDEX idx_" + table + "_" + sourceId + " ON " + table + " (" + sourceId + ")");
+            execute("CREATE INDEX idx_" + table + "_" + targetId + " ON " + table + " (" + targetId + ")");
         }
     }
 

@@ -26,8 +26,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
-public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware {
-    private final Logger logger = LoggerFactory.getLogger(LonganRegistrar.class);
+public class JpaAutoRegistrar implements ImportBeanDefinitionRegistrar, BeanFactoryAware {
+    private final Logger logger = LoggerFactory.getLogger(JpaAutoRegistrar.class);
     private BeanFactory beanFactory;
 
     @Override
@@ -38,6 +38,7 @@ public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
 //        }
         logger.info("Register jpa repository");
         DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) beanFactory;
+        JdbcSession jdbcSession = defaultListableBeanFactory.getBean(JdbcSession.class);
 //        defaultListableBeanFactory.addBeanPostProcessor(new BeanPostProcessor() {
 //            @Override
 //            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -89,12 +90,15 @@ public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
             registry.registerBeanDefinition(HandlerInterceptor.class.getSimpleName(), beanDefinition);
         }
 
+        DatabaseMetaData databaseMetaData = new DatabaseMetaData(jdbcSession);
+        databaseMetaData.populate();
 
-        RepositoryPostProcessor repositoryPostProcessor = beanFactory.getBean(RepositoryPostProcessor.class);
-        registryRepository(registry, repositoryPostProcessor, Database.getType());
+
+//        RepositoryPostProcessor repositoryPostProcessor = beanFactory.getBean(RepositoryPostProcessor.class);
+        registryRepository(registry,  Database.getType(),jdbcSession);
     }
 
-    private void registryRepository(BeanDefinitionRegistry registry, RepositoryPostProcessor repositoryPostProcessor, String database) {
+    private void registryRepository(BeanDefinitionRegistry registry,  String database,JdbcSession jdbcSession) {
         List<Class<?>> repositoryClasses = ClassPathBeanScanner.getRepositoryClassList();
         for (Class<?> repositoryClass : repositoryClasses) {
             if (repositoryClass.isInterface()) {
@@ -102,7 +106,7 @@ public class LonganRegistrar implements ImportBeanDefinitionRegistrar, BeanFacto
                     Type type = ((ParameterizedType) repositoryClass.getGenericInterfaces()[0]).getActualTypeArguments()[0];
                     JpaRepositoryProxy<?, ? extends Serializable> repositoryProxy = new JpaRepositoryProxy<>((Class<?>) type);
                     repositoryProxy.setDatabase(database);
-                    repositoryPostProcessor.addRepositoryProxy(repositoryProxy);
+                    repositoryProxy.setJdbcSession(jdbcSession);
 
                     Object proxy = Proxy.newProxyInstance(this.getClass().getClassLoader(),
                             new Class[]{repositoryClass}, repositoryProxy);

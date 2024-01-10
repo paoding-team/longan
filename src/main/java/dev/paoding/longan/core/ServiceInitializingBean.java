@@ -3,12 +3,11 @@ package dev.paoding.longan.core;
 import dev.paoding.longan.annotation.Mapping;
 import dev.paoding.longan.annotation.RpcService;
 import dev.paoding.longan.channel.Channel;
-import dev.paoding.longan.channel.http.*;
-import dev.paoding.longan.doc.DocumentService;
-import dev.paoding.longan.channel.dubbo.DubboInterceptor;
 import dev.paoding.longan.channel.dubbo.DubboFilter;
+import dev.paoding.longan.channel.dubbo.DubboInterceptor;
+import dev.paoding.longan.channel.http.*;
 import dev.paoding.longan.data.Entity;
-import dev.paoding.longan.channel.http.WebSocketListener;
+import dev.paoding.longan.doc.DocumentService;
 import dev.paoding.longan.util.StringUtils;
 import org.apache.dubbo.config.ServiceConfig;
 import org.springframework.beans.BeansException;
@@ -24,23 +23,29 @@ import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class ServiceInitializingBean implements BeanFactoryAware, InitializingBean {
     @Resource
+    private WebSocketListenerHandler webSocketListenerHandler;
+    @Resource
     private HttpServiceInvoker httpServiceInvoker;
     @Resource
     private ApplicationContext context;
-    private DubboInterceptor dubboInterceptor;
     @Resource
-    private WebSocketListenerHandler webSocketListenerHandler;
+    private HttpServer httpServer;
     @Value("${longan.api.enable:false}")
     private boolean apiEnabled;
-    private boolean dubboEnabled;
     private final AntPathMatcher matcher = new AntPathMatcher();
     private final Map<RequestMethod, List<String>> httpStaticMappings = new HashMap<>();
     private final Map<RequestMethod, List<String>> httpDynamicMappings = new HashMap<>();
+    private boolean dubboEnabled;
+    private DubboInterceptor dubboInterceptor;
+    private BeanFactory beanFactory;
 
     {
         for (RequestMethod requestMethod : RequestMethod.values()) {
@@ -51,23 +56,50 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
 
     @Override
     public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
-        if (beanFactory instanceof LonganListableBeanFactory longanListableBeanFactory) {
-            dubboEnabled = longanListableBeanFactory.isDubboEnabled();
-            if (dubboEnabled) {
-                this.dubboInterceptor = new DubboInterceptor();
-                longanListableBeanFactory.registerSingleton("dubboInterceptor", this.dubboInterceptor);
-            }
-        }
-        String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors((ListableBeanFactory) beanFactory, WebSocketListener.class);
-        for (String candidateName : candidateNames) {
-            webSocketListenerHandler.addWebSocketListener((WebSocketListener) beanFactory.getBean(candidateName));
-        }
+        this.beanFactory = beanFactory;
     }
 
     @Override
     public void afterPropertiesSet() {
+        registerDubboInterceptor();
+        addWebSocketListener();
         exportRpcService();
         loadApiDocument();
+        startHttpServer();
+    }
+
+    private void startHttpServer() {
+        try {
+            httpServer.startup();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void registerDubboInterceptor() {
+        if (beanFactory instanceof LonganListableBeanFactory longanListableBeanFactory) {
+            dubboEnabled = longanListableBeanFactory.isDubboEnabled();
+            if (dubboEnabled) {
+                this.dubboInterceptor = new DubboInterceptor();
+                longanListableBeanFactory.registerSingleton("dubboInterceptor", dubboInterceptor);
+
+//                ProviderConfig providerConfig = new ProviderConfig();
+//                providerConfig.setTimeout(12000);
+//                providerConfig.setRetries(0);
+//                providerConfig.setGroup("provider-group");
+//                providerConfig.setVersion("1.0.0");
+//                providerConfig.setFilter("-exception");
+//                providerConfig.setFilter(DubboFilter.class.getName());
+//                longanListableBeanFactory.registerSingleton("providerConfig", providerConfig);
+            }
+        }
+    }
+
+    private void addWebSocketListener() {
+        String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors((ListableBeanFactory) beanFactory, WebSocketListener.class);
+        for (String candidateName : candidateNames) {
+            webSocketListenerHandler.addWebSocketListener((WebSocketListener) beanFactory.getBean(candidateName));
+        }
     }
 
     private void exportRpcService() {
@@ -130,6 +162,7 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
             serviceConfig.setInterface(serviceInterface);
             serviceConfig.setRef(context.getBean(serviceClass));
             serviceConfig.setFilter(DubboFilter.class.getName());
+            serviceConfig.setRetries(0);
             serviceConfig.export();
         }
     }

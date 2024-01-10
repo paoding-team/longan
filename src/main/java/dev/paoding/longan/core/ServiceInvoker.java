@@ -29,9 +29,9 @@ public abstract class ServiceInvoker extends ResponseFilter {
     }
 
     protected Object invoke(Method method, Object object, Object[] arguments) {
-        Object result;
+        Object value;
         try {
-            result = method.invoke(object, arguments);
+            value = method.invoke(object, arguments);
         } catch (InvocationTargetException | IllegalAccessException e) {
             Throwable throwable = Throwables.getRootCause(e);
             Class<?> clazz = throwable.getClass();
@@ -45,13 +45,13 @@ public abstract class ServiceInvoker extends ResponseFilter {
                 throw internalServerException;
             }
         }
-        if (result == null) {
+        if (value == null) {
             return null;
-        } else if (ByteFile.class.isAssignableFrom(result.getClass())) {
-            return result;
+        } else if (ByteFile.class.isAssignableFrom(value.getClass())) {
+            return value;
         }
 
-        return filter(method, result);
+        return filter(method, value);
     }
 
 

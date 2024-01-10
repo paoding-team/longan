@@ -161,60 +161,66 @@ public class MetaColumn {
         sb.append(name);
         if (Integer.class.isAssignableFrom(type) || int.class.isAssignableFrom(type)) {
             if (primaryKey && generator.equals(Generator.AUTO)) {
-                sb.append(" int auto_increment");
+                sb.append(" INT AUTO_INCREMENT");
             } else {
-                sb.append(" int");
+                sb.append(" INT");
             }
         } else if (Long.class.isAssignableFrom(type) || long.class.isAssignableFrom(type)) {
             if (primaryKey && generator.equals(Generator.AUTO)) {
-                sb.append(" bigint auto_increment");
+                sb.append(" BIGINT AUTO_INCREMENT");
             } else {
-                sb.append(" bigint");
+                sb.append(" BIGINT");
+            }
+        } else if (Short.class.isAssignableFrom(type) || short.class.isAssignableFrom(type)) {
+            if (primaryKey && generator.equals(Generator.AUTO)) {
+                sb.append(" SMALLINT AUTO_INCREMENT");
+            } else {
+                sb.append(" SMALLINT");
             }
         } else if (Float.class.isAssignableFrom(type) || float.class.isAssignableFrom(type)) {
             if (getPrecision() > 0 || getScale() > 0) {
-                sb.append(" numeric(" + getPrecision() + "," + getScale() + ")");
+                sb.append(" NUMERIC(" + getPrecision() + ", " + getScale() + ")");
             } else {
-                sb.append(" real");
+                sb.append(" REAL");
             }
         } else if (Double.class.isAssignableFrom(type) || double.class.isAssignableFrom(type)) {
             if (field.isAnnotationPresent(Money.class)) {
-                sb.append(" numeric(10,2)");
+                sb.append(" NUMERIC(10, 2)");
             } else {
                 if (getPrecision() > 0 || getScale() > 0) {
-                    sb.append(" numeric(" + getPrecision() + "," + getScale() + ")");
+                    sb.append(" NUMERIC(" + getPrecision() + ", " + getScale() + ")");
                 } else {
-                    sb.append(" double precision");
+                    sb.append(" DOUBLE PRECISION");
                 }
             }
         } else if (String.class.isAssignableFrom(type)) {
             if (length > 0) {
-                sb.append(" nvarchar(" + length + ")");
+                sb.append(" NVARCHAR(" + length + ")");
             } else {
-                sb.append(" text");
+                sb.append(" TEXT");
             }
         } else if (Boolean.class.isAssignableFrom(type) || boolean.class.isAssignableFrom(type)) {
-            sb.append(" boolean");
+            sb.append(" BOOLEAN");
         } else if (LocalDateTime.class.isAssignableFrom(getType())) {
-            sb.append(" datetime");
+            sb.append(" DATETIME");
         } else if (LocalDate.class.isAssignableFrom(getType())) {
-            sb.append(" date");
+            sb.append(" DATE");
         } else if (LocalTime.class.isAssignableFrom(getType())) {
-            sb.append(" time");
+            sb.append(" TIME");
         } else if (Instant.class.isAssignableFrom(getType())) {
-            sb.append(" timestamp");
+            sb.append(" TIMESTAMP");
         } else if (Timestamp.class.isAssignableFrom(getType())) {
-            sb.append(" timestamp");
+            sb.append(" TIMESTAMP");
         } else if (Enum.class.isAssignableFrom(getType())) {
-            sb.append(" nvarchar(" + length + ")");
+            sb.append(" NVARCHAR(" + length + ")");
         } else {
             throw new RuntimeException("not support" + getType());
         }
 
         if (isPrimaryKey()) {
-            sb.append(", constraint pk_" + tableName + " primary key(" + name + ")");
+            sb.append(", CONSTRAINT pk_" + tableName + " PRIMARY KEY(" + name + ")");
         } else if (!isNullable()) {
-            sb.append(" not null");
+            sb.append(" NOT NULL");
         }
 
         return sb.toString();
