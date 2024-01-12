@@ -2,24 +2,22 @@ package dev.paoding.longan.data.jpa;
 
 import com.google.common.base.Joiner;
 import dev.paoding.longan.core.ClassPathBeanScanner;
-import dev.paoding.longan.core.DataSourceConfig;
 import dev.paoding.longan.data.Entity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
+@Slf4j
 public class DatabaseMetaData {
-    private final Logger logger = LoggerFactory.getLogger(DatabaseMetaData.class);
+    private final JdbcSession jdbcSession;
     private Connection connection;
-    private JdbcSession jdbcSession;
+
 
     public DatabaseMetaData(JdbcSession jdbcSession) {
         this.jdbcSession = jdbcSession;
@@ -77,12 +75,11 @@ public class DatabaseMetaData {
                             execute("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " DROP NOT NULL;");
                         }
 
-                        String indexName = "idx_" + tableName + "_" + columnName;
+                        String indexName = "idx_" + columnName;
                         if (metaColumn.isUnique()) {
                             if (indexMap.containsKey(indexName)) {
                                 execute("DROP INDEX IF EXISTS " + indexName);
                             }
-                            indexName = "u" + indexName;
                             if (!indexMap.containsKey(indexName)) {
                                 createIndex(indexName, tableName, columnName, true);
                             }
@@ -114,13 +111,12 @@ public class DatabaseMetaData {
                         String columnNames = Joiner.on(", ").join(columnNameList);
                         String indexName = index.name();
                         if (index.name().isEmpty()) {
-                            indexName = "idx_" + tableName + "_" + Joiner.on("_").join(columnNameList);
+                            indexName = "idx_" + Joiner.on("_").join(columnNameList);
                         }
                         if (index.unique()) {
                             if (indexMap.containsKey(indexName)) {
                                 execute("DROP INDEX IF EXISTS " + indexName);
                             }
-                            indexName = "u" + indexName;
                             if (!indexMap.containsKey(indexName)) {
                                 createIndex(indexName, tableName, columnNames, true);
                             }
@@ -128,7 +124,6 @@ public class DatabaseMetaData {
                             if (!indexMap.containsKey(indexName)) {
                                 createIndex(indexName, tableName, columnNames, false);
                             }
-                            indexName = "u" + indexName;
                             if (indexMap.containsKey(indexName)) {
                                 execute("DROP INDEX IF EXISTS " + indexName);
                             }
@@ -140,13 +135,11 @@ public class DatabaseMetaData {
     }
 
     private void createUniqueIndex(String tableName, String columnName) {
-        String indexName = "uidx_" + tableName + "_" + columnName;
-//        execute("drop index if exists " + indexName);
+        String indexName = "uk_" + columnName;
         execute("CREATE UNIQUE INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
     }
 
     private void createIndex(String indexName, String tableName, String columnName, boolean unique) {
-//        execute("drop index if exists " + indexName);
         execute("CREATE" + (unique ? " UNIQUE" : "") + " INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
     }
 
@@ -187,7 +180,7 @@ public class DatabaseMetaData {
         try {
             connection.createStatement().execute(sql);
         } catch (SQLException e) {
-            logger.error(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 
