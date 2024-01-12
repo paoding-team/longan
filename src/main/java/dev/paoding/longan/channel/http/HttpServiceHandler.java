@@ -33,7 +33,7 @@ public class HttpServiceHandler extends AbstractServiceHandler {
     @Resource
     private HttpServiceInvoker httpServiceInvoker;
     @Resource
-    private MethodInvocationStore methodInvocationStore;
+    private MethodInvocationProvider methodInvocationProvider;
 
     private String[] parseURI(String uri) {
         uri = URLDecoder.decode(uri, StandardCharsets.UTF_8);
@@ -57,7 +57,7 @@ public class HttpServiceHandler extends AbstractServiceHandler {
                 query = array[1];
             }
 
-            MethodInvocation methodInvocation = methodInvocationStore.get(fullHttpRequest.method(), path);
+            MethodInvocation methodInvocation = methodInvocationProvider.get(fullHttpRequest.method(), path);
             HttpRequest httpRequest = new HttpRequestImpl(fullHttpRequest, methodInvocation.getPath());
 
             if (handlerInterceptor.preHandle(httpRequest)) {

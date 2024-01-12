@@ -3,6 +3,7 @@ package dev.paoding.longan.core;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.EnvironmentAware;
@@ -75,4 +76,5 @@ public class RedisAutoConfiguration implements ImportBeanDefinitionRegistrar, En
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
+
 }

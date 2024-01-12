@@ -23,13 +23,13 @@ public class RpcServiceInvoker extends ServiceInvoker {
     private final BeanValidator beanValidator = new BeanValidator();
     private final BeanCleaner beanCleaner = new BeanCleaner();
 
-    public void addRpcMethod(Object rpcService, Method method, String mapping) {
-        MethodInvocation methodInvocation = new MethodInvocation();
-        methodInvocation.setService(rpcService);
-        methodInvocation.setMethod(method);
-        methodInvocation.setPath(mapping);
-        rpcMethodMap.put(mapping, methodInvocation);
-    }
+//    public void addRpcMethod(Object rpcService, Method method, String mapping) {
+//        MethodInvocation methodInvocation = new MethodInvocation();
+//        methodInvocation.setService(rpcService);
+//        methodInvocation.setMethod(method);
+//        methodInvocation.setPath(mapping);
+//        rpcMethodMap.put(mapping, methodInvocation);
+//    }
 
     public Object invoke(String path, MultipartFile multipartFile) {
         MethodInvocation methodInvocation = rpcMethodMap.get(path);

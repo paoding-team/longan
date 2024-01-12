@@ -2,7 +2,6 @@ package dev.paoding.longan.channel.dubbo;
 
 import dev.paoding.longan.annotation.Param;
 import dev.paoding.longan.annotation.Validator;
-import dev.paoding.longan.core.MethodDescriptor;
 import dev.paoding.longan.core.MethodInvocation;
 import dev.paoding.longan.core.ResponseFilter;
 import dev.paoding.longan.service.ConstraintViolationException;
@@ -10,7 +9,6 @@ import dev.paoding.longan.validation.BeanCleaner;
 import dev.paoding.longan.validation.BeanValidator;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,20 +16,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DubboInterceptor extends ResponseFilter {
-    private final Map<String, List<MethodInvocation>> methodWrapMap = new ConcurrentHashMap<>();
+    private final Map<String, List<MethodInvocation>> MethodInvocations = new ConcurrentHashMap<>();
     private final BeanValidator beanValidator = new BeanValidator();
     private final BeanCleaner beanCleaner = new BeanCleaner();
 
-    public void put(Method method, String mapping, MethodDescriptor methodDescriptor) {
-        MethodInvocation methodInvocation = new MethodInvocation();
-        methodInvocation.setMethod(method);
-        methodInvocation.setPath(mapping);
-        methodInvocation.setLineNumber(methodDescriptor.getLineNumber());
-
-        if (!methodWrapMap.containsKey(mapping)) {
-            methodWrapMap.put(mapping, new ArrayList<>());
+    public void add(MethodInvocation methodInvocation){
+       String key = methodInvocation.getServiceInterface().getName() + "." + methodInvocation.getServiceInterface().getName();
+        if (!MethodInvocations.containsKey(key)) {
+            MethodInvocations.put(key, new ArrayList<>());
         }
-        methodWrapMap.get(mapping).add(methodInvocation);
+        MethodInvocations.get(key).add(methodInvocation);
     }
 
     public void validate(String serviceName, String methodName, Class<?>[] parameterTypes, Object[] objects) {
@@ -60,8 +54,8 @@ public class DubboInterceptor extends ResponseFilter {
     }
 
     public MethodInvocation get(String mapping, String serviceName, String methodName, Class<?>[] parameterTypes) {
-        if (methodWrapMap.containsKey(mapping)) {
-            List<MethodInvocation> methodInvocationList = methodWrapMap.get(mapping);
+        if (MethodInvocations.containsKey(mapping)) {
+            List<MethodInvocation> methodInvocationList = MethodInvocations.get(mapping);
             for (MethodInvocation methodInvocation : methodInvocationList) {
                 if (equals(methodInvocation.getMethod().getParameterTypes(), parameterTypes)) {
                     return methodInvocation;

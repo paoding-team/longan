@@ -19,13 +19,40 @@ import java.util.Map;
 public class MethodInvocation extends ParameterValidator {
     private final Map<String, Validator> validatorMap = new HashMap<>();
     private final Map<String, Param> paramMap = new HashMap<>();
+    private Class<?> serviceInterface;
+    private Class<?> serviceClass;
     private Object service;
     private Method method;
     private String path;
-    private int LineNumber;
+    private int lineNumber;
     private String responseType;
     private boolean hasRequestBody;
     private Parameter[] parameters;
+
+    public MethodInvocation(MethodDescriptor methodDescriptor, String path) {
+        this.path = path;
+        this.method = methodDescriptor.getMethod();
+        this.lineNumber = methodDescriptor.getLineNumber();
+    }
+
+    public MethodInvocation(Class<?> serviceInterface, Class<?> serviceClass, MethodDescriptor methodDescriptor) {
+        this.serviceInterface = serviceInterface;
+        this.serviceClass = serviceClass;
+        this.method = methodDescriptor.getMethod();
+        this.lineNumber = methodDescriptor.getLineNumber();
+    }
+
+//    public void setInterface(Class<?> interfaceClass) {
+//        this.interfaceClass = interfaceClass;
+//    }
+
+    public Class<?> getServiceInterface() {
+        return this.serviceInterface;
+    }
+
+    public Class<?> getServiceClass() {
+        return this.serviceClass;
+    }
 
     public Object getParameter(HttpDataEntity httpDataEntity, Parameter parameter) {
         RequestParam requestParam = parameter.getAnnotation(RequestParam.class);
@@ -92,11 +119,11 @@ public class MethodInvocation extends ParameterValidator {
     }
 
     public int getLineNumber() {
-        return LineNumber;
+        return lineNumber;
     }
 
     public void setLineNumber(int lineNumber) {
-        LineNumber = lineNumber;
+        this.lineNumber = lineNumber;
     }
 
     public Parameter[] getParameters() {
