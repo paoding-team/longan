@@ -14,12 +14,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
-public class DatabaseMetaData {
+public class TableMetaDataManager {
     private final JdbcSession jdbcSession;
     private Connection connection;
 
 
-    public DatabaseMetaData(JdbcSession jdbcSession) {
+    public TableMetaDataManager(JdbcSession jdbcSession) {
         this.jdbcSession = jdbcSession;
     }
 
@@ -49,7 +49,7 @@ public class DatabaseMetaData {
                         Class<?> type = (Class<?>) ((ParameterizedType) fieldType).getActualTypeArguments()[0];
                         String source = SqlParser.toDatabaseName(classType.getSimpleName());
                         String target = SqlParser.toDatabaseName(type.getSimpleName());
-                        createLinkTable(databaseMetaData, source, target, manyToMany.role());
+                        createMappingTable(databaseMetaData, source, target, manyToMany.role());
                     }
                 }
             }
@@ -143,7 +143,7 @@ public class DatabaseMetaData {
         execute("CREATE" + (unique ? " UNIQUE" : "") + " INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
     }
 
-    private void createLinkTable(java.sql.DatabaseMetaData databaseMetaData, String source, String target, String role) {
+    private void createMappingTable(java.sql.DatabaseMetaData databaseMetaData, String source, String target, String role) {
         if (!role.isEmpty()) {
             role = "_" + role;
         }
@@ -224,21 +224,6 @@ public class DatabaseMetaData {
             throw new RuntimeException(e);
         }
         return indexMap;
-    }
-
-    public Set<String> getView(java.sql.DatabaseMetaData databaseMetaData) {
-        Set<String> viewSet = new HashSet<>();
-        try {
-            ResultSet resultSet = databaseMetaData.getTables(null, "public", null, new String[]{"VIEW"});
-            while (resultSet.next()) {
-                viewSet.add(resultSet.getString("table_name"));
-            }
-            resultSet.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return viewSet;
     }
 
 }
