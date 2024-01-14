@@ -18,6 +18,6 @@ public class LonganApplication {
         annotationConfigApplicationContext.register(primarySource);
         annotationConfigApplicationContext.refresh();
         stopWatch.stop();
-        logger.info("Started Application in {} seconds.", stopWatch.getTotalTimeSeconds());
+        logger.info("Started Application in {} seconds.", String.format("%.3f", stopWatch.getTotalTimeSeconds()));
     }
 }
