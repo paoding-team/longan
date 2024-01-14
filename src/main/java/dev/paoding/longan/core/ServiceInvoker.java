@@ -11,6 +11,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 public abstract class ServiceInvoker extends ResponseFilter {
 
@@ -41,8 +42,8 @@ public abstract class ServiceInvoker extends ResponseFilter {
                 throw (ServiceException) throwable;
             } else if (clazz == EmptyResultDataAccessException.class) {
                 throw new DataNotFoundException("data not found");
-            } else if (clazz == DuplicateKeyException.class) {
-                throw new DuplicateException("duplicate entry");
+            } else if (clazz == SQLIntegrityConstraintViolationException.class) {
+                throw new DuplicateException("duplicate entry", throwable);
             } else {
                 InternalServerException internalServerException = new InternalServerException(throwable.getMessage());
                 internalServerException.setStackTrace(throwable.getStackTrace());

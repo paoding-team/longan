@@ -80,28 +80,29 @@ public class JpaRepositoryProxy<T, ID> implements InvocationHandler, JpaReposito
             Map<String, Object> paramMap = SqlParser.toMap(method, args);
             Query query = method.getAnnotation(Query.class);
             String sql = query.value().trim();
-            if (sql.startsWith("select")) {
-                if (query.dynamic()) {
-                    sql = SqlParser.parseDynamicSql(sql, paramMap);
-                } else {
-                    sql = SqlParser.parseStaticSql(sql, paramMap);
-                }
-                if (paramMap.containsKey("pageable")) {
-                    Pageable pageable = (Pageable) paramMap.get("pageable");
-                    if (pageable != null) {
-                        sql += pageable.toSql();
-                    }
-                }
-                if (returnType.isAssignableFrom(List.class)) {
-                    return EntityUtils.wrap(metaTable, jdbcSession.query(sql, paramMap, metaTable.getRowMapper()));
-                } else if (returnType.isPrimitive()) {
-                    return jdbcSession.queryForObject(sql, paramMap, returnType);
-                } else {
-                    return EntityUtils.wrap(metaTable, jdbcSession.queryForObject(sql, paramMap, metaTable.getRowMapper()));
-                }
+//            if (sql.startsWith("select")) {
+            if (query.dynamic()) {
+                sql = SqlParser.parseDynamicSql(sql, paramMap);
             } else {
-                return jdbcSession.update(sql, paramMap);
+                sql = SqlParser.parseStaticSql(sql, paramMap);
             }
+            if (paramMap.containsKey("pageable")) {
+                Pageable pageable = (Pageable) paramMap.get("pageable");
+                if (pageable != null) {
+                    sql += pageable.toSql();
+                }
+            }
+            if (returnType.isAssignableFrom(List.class)) {
+                return EntityUtils.wrap(metaTable, jdbcSession.query(sql, paramMap, metaTable.getRowMapper()));
+            } else if (returnType.isPrimitive()) {
+                return jdbcSession.queryForObject(sql, paramMap, returnType);
+            } else {
+                return EntityUtils.wrap(metaTable, jdbcSession.queryForObject(sql, paramMap, metaTable.getRowMapper()));
+            }
+//            }
+//            else {
+//                return jdbcSession.update(sql, paramMap);
+//            }
         }
 
         Parameter[] parameters = method.getParameters();
