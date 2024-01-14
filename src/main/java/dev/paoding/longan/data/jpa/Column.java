@@ -9,7 +9,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface Column {
-    int length() default 256;
+
+    int length() default 255;
 
     String alias() default "";
 

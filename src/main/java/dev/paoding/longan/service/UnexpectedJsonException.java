@@ -1,16 +1,22 @@
 package dev.paoding.longan.service;
 
+import dev.paoding.longan.channel.http.HttpRequestException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.io.Serial;
 
 
-public class BadRequestException extends ServiceException {
+public class UnexpectedJsonException extends HttpRequestException {
     @Serial
     private static final long serialVersionUID = 0L;
 
-    public BadRequestException() {
+    public UnexpectedJsonException() {
         super("unexpected json data");
+        this.code = "unexpected.json.data";
+    }
+
+    public UnexpectedJsonException(String message) {
+        super(message);
         this.code = "unexpected.json.data";
     }
 

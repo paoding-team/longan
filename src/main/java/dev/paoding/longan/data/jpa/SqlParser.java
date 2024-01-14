@@ -70,9 +70,9 @@ public class SqlParser {
             role = "_" + role;
         }
         if (source.compareTo(target) < 0) {
-            return source + "_" + target + role + "_link";
+            return source + "_" + target + role;
         } else {
-            return target + "_" + source + role + "_link";
+            return target + "_" + source + role;
         }
     }
 
@@ -81,10 +81,10 @@ public class SqlParser {
             role = "_" + role;
         }
         if (source.compareTo(target) < 0) {
-            String tableName = source + "_" + target + role + "_link";
+            String tableName = source + "_" + target + role;
             return "select count(1) from " + tableName + " where " + source + "_id = :" + source + "_id and " + target + "_id = :" + target + "_id";
         } else {
-            String tableName = target + "_" + source + role + "_link";
+            String tableName = target + "_" + source + role;
             return "select count(1) from " + tableName + " where " + target + "_id = :" + target + "_id and " + source + "_id = :" + source + "_id";
         }
     }
@@ -94,10 +94,10 @@ public class SqlParser {
             role = "_" + role;
         }
         if (source.compareTo(target) < 0) {
-            String tableName = source + "_" + target + role + "_link";
+            String tableName = source + "_" + target + role;
             return "insert into " + tableName + " (" + source + "_id, " + target + "_id) values (:" + source + "_id, :" + target + "_id)";
         } else {
-            String tableName = target + "_" + source + role + "_link";
+            String tableName = target + "_" + source + role;
             return "insert into " + tableName + " (" + target + "_id, " + source + "_id) values (:" + target + "_id, :" + source + "_id)";
         }
     }
@@ -107,10 +107,10 @@ public class SqlParser {
             role = "_" + role;
         }
         if (source.compareTo(target) < 0) {
-            String tableName = source + "_" + target + role + "_link";
+            String tableName = source + "_" + target + role;
             return "delete from " + tableName + " where " + source + "_id = :" + source + "_id and " + target + "_id = :" + target + "_id";
         } else {
-            String tableName = target + "_" + source + role + "_link";
+            String tableName = target + "_" + source + role;
             return "delete from " + tableName + " where " + target + "_id = :" + target + "_id and " + source + "_id = :" + source + "_id";
         }
     }
@@ -121,15 +121,15 @@ public class SqlParser {
         }
         String tableName;
         if (source.compareTo(target) < 0) {
-            tableName = source + "_" + target + role + "_link";
+            tableName = source + "_" + target + role;
         } else {
-            tableName = target + "_" + source + role + "_link";
+            tableName = target + "_" + source + role;
         }
         return "delete from " + tableName + " where " + source + "_id = :" + source + "_id";
     }
 
     public static String toColumnName(String name) {
-      return StringUtils.lower(name);
+        return StringUtils.lower(name);
     }
 
     public static String toDatabaseName(String name) {

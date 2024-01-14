@@ -9,15 +9,24 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
-public class TableMetaDataManager {
+public abstract class TableMetaDataManager {
     private final JdbcSession jdbcSession;
     private Connection connection;
 
+    public static TableMetaDataManager create(JdbcSession jdbcSession) {
+        if (Database.isMySQL()) {
+            return new MysqlTableMetaDataManager(jdbcSession);
+        } else if (Database.isPostgresql()) {
+            return new PostgresqlTableMetaDataManager(jdbcSession);
+        }
+        return null;
+    }
 
     public TableMetaDataManager(JdbcSession jdbcSession) {
         this.jdbcSession = jdbcSession;
@@ -26,15 +35,15 @@ public class TableMetaDataManager {
     public void populate() {
         try (Connection connection = jdbcSession.getConnection()) {
             this.connection = connection;
-            java.sql.DatabaseMetaData databaseMetaData = connection.getMetaData();
+            DatabaseMetaData databaseMetaData = connection.getMetaData();
             populate(databaseMetaData);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void populate(java.sql.DatabaseMetaData databaseMetaData) {
-        List<Class<?>> entityList = ClassPathBeanScanner.getModuleEntityClassList();
+    private void populate(DatabaseMetaData databaseMetaData) {
+        List<Class<?>> entityList = ClassPathBeanScanner.getProjectEntityClasses();
         for (Class<?> classType : entityList) {
             Entity entity = classType.getAnnotation(Entity.class);
             if (entity.virtual()) {
@@ -63,6 +72,15 @@ public class TableMetaDataManager {
                 for (String sql : sqlList) {
                     execute(sql);
                 }
+
+                List<MetaColumn> metaColumnList = metaTable.getMetaColumnList();
+                for (MetaColumn metaColumn : metaColumnList) {
+                    String columnName = metaColumn.getName();
+                    if (metaColumn.isUnique()) {
+                        String indexName = decorateIndexName("uk", tableName, columnName);
+                        createIndex(indexName, tableName, columnName, true);
+                    }
+                }
             } else {
                 List<MetaColumn> metaColumnList = metaTable.getMetaColumnList();
                 for (MetaColumn metaColumn : metaColumnList) {
@@ -75,11 +93,8 @@ public class TableMetaDataManager {
                             execute("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " DROP NOT NULL;");
                         }
 
-                        String indexName = "idx_" + columnName;
                         if (metaColumn.isUnique()) {
-                            if (indexMap.containsKey(indexName)) {
-                                execute("DROP INDEX IF EXISTS " + indexName);
-                            }
+                            String indexName = decorateIndexName("uk", tableName, columnName);
                             if (!indexMap.containsKey(indexName)) {
                                 createIndex(indexName, tableName, columnName, true);
                             }
@@ -87,7 +102,8 @@ public class TableMetaDataManager {
                     } else {
                         execute("ALTER TABLE " + tableName + " ADD " + metaColumn.generateText());
                         if (metaColumn.isUnique()) {
-                            createUniqueIndex(tableName, columnName);
+                            String indexName = decorateIndexName("uk", tableName, columnName);
+                            createIndex(indexName, tableName, columnName, true);
                         }
                     }
                 }
@@ -108,24 +124,19 @@ public class TableMetaDataManager {
                             columnNameList.add(columnName);
                         }
 
-                        String columnNames = Joiner.on(", ").join(columnNameList);
                         String indexName = index.name();
                         if (index.name().isEmpty()) {
-                            indexName = "idx_" + Joiner.on("_").join(columnNameList);
+                            indexName = Joiner.on("_").join(columnNameList);
                         }
                         if (index.unique()) {
-                            if (indexMap.containsKey(indexName)) {
-                                execute("DROP INDEX IF EXISTS " + indexName);
-                            }
+                            indexName = decorateIndexName("uk", tableName, indexName);
                             if (!indexMap.containsKey(indexName)) {
-                                createIndex(indexName, tableName, columnNames, true);
+                                createIndex(indexName, tableName, columnNameList, true);
                             }
                         } else {
+                            indexName = decorateIndexName("idx", tableName, indexName);
                             if (!indexMap.containsKey(indexName)) {
-                                createIndex(indexName, tableName, columnNames, false);
-                            }
-                            if (indexMap.containsKey(indexName)) {
-                                execute("DROP INDEX IF EXISTS " + indexName);
+                                createIndex(indexName, tableName, columnNameList, false);
                             }
                         }
                     }
@@ -134,13 +145,14 @@ public class TableMetaDataManager {
         }
     }
 
-    private void createUniqueIndex(String tableName, String columnName) {
-        String indexName = "uk_" + columnName;
-        execute("CREATE UNIQUE INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
-    }
+    protected abstract String decorateIndexName(String prefix, String tableName, String indexName);
 
     private void createIndex(String indexName, String tableName, String columnName, boolean unique) {
-        execute("CREATE" + (unique ? " UNIQUE" : "") + " INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
+        execute("CREATE " + (unique ? " UNIQUE" : "") + " INDEX " + indexName + " ON " + tableName + " (" + columnName + ")");
+    }
+
+    private void createIndex(String indexName, String tableName, List<String> columnNameList, boolean unique) {
+        execute("CREATE" + (unique ? " UNIQUE" : "") + " INDEX " + indexName + " ON " + tableName + " (" + Joiner.on(",").join(columnNameList) + ")");
     }
 
     private void createMappingTable(java.sql.DatabaseMetaData databaseMetaData, String source, String target, String role) {
@@ -151,11 +163,11 @@ public class TableMetaDataManager {
         String sourceId;
         String targetId;
         if (source.compareTo(target) < 0) {
-            table = source + "_" + target + role + "_link";
+            table = source + "_" + target + role;
             sourceId = source + "_id";
             targetId = target + "_id";
         } else {
-            table = target + "_" + source + role + "_link";
+            table = target + "_" + source + role;
             sourceId = target + "_id";
             targetId = source + "_id";
         }
@@ -175,7 +187,7 @@ public class TableMetaDataManager {
     }
 
 
-    private void execute(String sql) {
+    protected void execute(String sql) {
         SqlLogger.log(sql);
         try {
             connection.createStatement().execute(sql);
@@ -184,11 +196,13 @@ public class TableMetaDataManager {
         }
     }
 
-    private Map<String, MetaColumn> getColumnMap(java.sql.DatabaseMetaData databaseMetaData, String table) {
+    private Map<String, MetaColumn> getColumnMap(DatabaseMetaData databaseMetaData, String table) {
         Map<String, MetaColumn> columnMap = new HashMap<>();
         try {
             ResultSet resultSet = databaseMetaData.getColumns(null, "public", table, null);
             while (resultSet.next()) {
+//                String columnType = resultSet.getString("TYPE_NAME");
+//                int columnSize = resultSet.getInt("COLUMN_SIZE");
                 MetaColumn metaColumn = new MetaColumn();
                 metaColumn.setName(resultSet.getString("COLUMN_NAME"));
                 if (Database.isPostgresql()) {

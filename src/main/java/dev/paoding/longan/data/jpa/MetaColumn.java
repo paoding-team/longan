@@ -227,7 +227,7 @@ public class MetaColumn {
         }
 
         if (isPrimaryKey()) {
-            sb.append(", CONSTRAINT pk_" + tableName + " PRIMARY KEY(" + name + ")");
+            sb.append(" PRIMARY KEY ");
         } else if (!isNullable()) {
             sb.append(" NOT NULL");
         }

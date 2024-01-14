@@ -56,14 +56,14 @@ public class JpaAutoRegistrar implements ImportBeanDefinitionRegistrar {
 //        String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(defaultListableBeanFactory, HandlerInterceptor.class);
 
 
-        TableMetaDataManager tableMetaDataManager = new TableMetaDataManager(jdbcSession);
+        TableMetaDataManager tableMetaDataManager = TableMetaDataManager.create(jdbcSession);
         tableMetaDataManager.populate();
 
         registryRepository(registry, Database.getType(), jdbcSession);
     }
 
     private void registryRepository(BeanDefinitionRegistry registry, String database, JdbcSession jdbcSession) {
-        List<Class<?>> repositoryClasses = ClassPathBeanScanner.getRepositoryClassList();
+        List<Class<?>> repositoryClasses = ClassPathBeanScanner.getRepositoryClasses();
         for (Class<?> repositoryClass : repositoryClasses) {
             if (repositoryClass.isInterface()) {
                 if (JpaRepository.class.isAssignableFrom(repositoryClass)) {

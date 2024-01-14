@@ -90,7 +90,7 @@ public class RpcServiceAutoRegistrar implements ImportBeanDefinitionRegistrar {
 
 
 
-        List<ServiceDescriptor> serviceDescriptorList = ClassPathBeanScanner.getServiceClassList();
+        List<ServiceDescriptor> serviceDescriptorList = ClassPathBeanScanner.getServiceClasses();
         for (ServiceDescriptor serviceDescriptor : serviceDescriptorList) {
             Class<?> serviceClass = serviceDescriptor.getServiceClass();
             List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethodDescriptorList();
@@ -164,7 +164,7 @@ public class RpcServiceAutoRegistrar implements ImportBeanDefinitionRegistrar {
                 }
             }
             httpDynamicMappingList.add(path);
-            methodInvocationProvider.addDynamicHttpMethod(methodDescriptor, requestMethod, path);
+            methodInvocationProvider.addDynamicHttpMethod(serviceClass,methodDescriptor, requestMethod, path);
         } else {
             for (String existedMapping : httpStaticMappingList) {
                 if (existedMapping.endsWith(path)) {
@@ -177,7 +177,7 @@ public class RpcServiceAutoRegistrar implements ImportBeanDefinitionRegistrar {
                 }
             }
             httpStaticMappingList.add(path);
-            methodInvocationProvider.addStaticHttpMethod(methodDescriptor, requestMethod, path);
+            methodInvocationProvider.addStaticHttpMethod(serviceClass,methodDescriptor, requestMethod, path);
         }
     }
 

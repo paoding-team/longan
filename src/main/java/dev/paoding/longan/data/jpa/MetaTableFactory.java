@@ -105,7 +105,7 @@ public class MetaTableFactory {
 
 
     public static void load() {
-        List<Class<?>> entityList = ClassPathBeanScanner.getModuleEntityClassList();
+        List<Class<?>> entityList = ClassPathBeanScanner.getProjectEntityClasses();
         for (Class<?> classType : entityList) {
             if (classType.isAnnotationPresent(Entity.class)) {
                 MetaTableFactory.create(classType);

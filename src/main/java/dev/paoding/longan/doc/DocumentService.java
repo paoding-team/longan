@@ -29,7 +29,7 @@ public class DocumentService {
 
     public static void load(Class<?> type) {
         MetaModelService.load();
-        List<ServiceDescriptor> classList = ClassPathBeanScanner.getServiceClassList();
+        List<ServiceDescriptor> classList = ClassPathBeanScanner.getServiceClasses();
         for (ServiceDescriptor serviceDescriptor : classList) {
             loadService(serviceDescriptor);
         }
@@ -44,7 +44,7 @@ public class DocumentService {
             return json;
         }
         MetaModelService.load();
-        List<ServiceDescriptor> classList = ClassPathBeanScanner.getServiceClassList();
+        List<ServiceDescriptor> classList = ClassPathBeanScanner.getServiceClasses();
         for (ServiceDescriptor serviceDescriptor : classList) {
             if (serviceDescriptor.isAnnotationPresent(RpcService.class)) {
                 loadService(serviceDescriptor);

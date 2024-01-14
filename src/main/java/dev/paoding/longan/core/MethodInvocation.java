@@ -29,10 +29,12 @@ public class MethodInvocation extends ParameterValidator {
     private boolean hasRequestBody;
     private Parameter[] parameters;
 
-    public MethodInvocation(MethodDescriptor methodDescriptor, String path) {
+    public MethodInvocation(Class<?> serviceClass,MethodDescriptor methodDescriptor, String path) {
         this.path = path;
+        this.serviceClass = serviceClass;
         this.method = methodDescriptor.getMethod();
         this.lineNumber = methodDescriptor.getLineNumber();
+        setMethod(methodDescriptor.getMethod());
     }
 
     public MethodInvocation(Class<?> serviceInterface, Class<?> serviceClass, MethodDescriptor methodDescriptor) {
@@ -40,6 +42,7 @@ public class MethodInvocation extends ParameterValidator {
         this.serviceClass = serviceClass;
         this.method = methodDescriptor.getMethod();
         this.lineNumber = methodDescriptor.getLineNumber();
+        setMethod(methodDescriptor.getMethod());
     }
 
 //    public void setInterface(Class<?> interfaceClass) {
@@ -146,7 +149,7 @@ public class MethodInvocation extends ParameterValidator {
         return this.hasRequestBody;
     }
 
-    public void setMethod(Method method) {
+    private void setMethod(Method method) {
         this.method = method;
         this.parameters = method.getParameters();
         for (Parameter parameter : parameters) {

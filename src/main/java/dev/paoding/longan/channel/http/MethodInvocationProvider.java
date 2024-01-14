@@ -39,7 +39,7 @@ public class MethodInvocationProvider {
         return methodInvocations;
     }
 
-    public List<MethodInvocation> getDubboMethodInvocations(){
+    public List<MethodInvocation> getDubboMethodInvocations() {
         return dubboMethodInvocations;
     }
 
@@ -47,13 +47,13 @@ public class MethodInvocationProvider {
         this.dubboMethodInvocations.add(methodInvocation);
     }
 
-    public void addStaticHttpMethod(MethodDescriptor methodDescriptor, RequestMethod requestMethod, String path) {
-        MethodInvocation methodInvocation = new MethodInvocation(methodDescriptor, path);
+    public void addStaticHttpMethod(Class<?> serviceClass, MethodDescriptor methodDescriptor, RequestMethod requestMethod, String path) {
+        MethodInvocation methodInvocation = new MethodInvocation(serviceClass, methodDescriptor, path);
         staticHttpMethodInvocations.get(HttpMethod.valueOf(requestMethod.name())).put(path, methodInvocation);
     }
 
-    public void addDynamicHttpMethod(MethodDescriptor methodDescriptor, RequestMethod requestMethod, String path) {
-        MethodInvocation methodInvocation = new MethodInvocation(methodDescriptor, path);
+    public void addDynamicHttpMethod(Class<?> serviceClass, MethodDescriptor methodDescriptor, RequestMethod requestMethod, String path) {
+        MethodInvocation methodInvocation = new MethodInvocation(serviceClass, methodDescriptor, path);
         dynamicHttpMethodInvocations.get(HttpMethod.valueOf(requestMethod.name())).add(methodInvocation);
     }
 

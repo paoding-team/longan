@@ -38,6 +38,7 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
     public void afterPropertiesSet() {
         registerWebSocketListener();
         exportDubboService();
+        exportHttpService();
         exportApiDocument();
         startupHttpServer();
     }
@@ -77,6 +78,12 @@ public class ServiceInitializingBean implements BeanFactoryAware, InitializingBe
         }
     }
 
+    private void exportHttpService() {
+        List<MethodInvocation> methodInvocations = methodInvocationProvider.getHttpMethodInvocations();
+        for (MethodInvocation methodInvocation : methodInvocations) {
+            methodInvocation.setService(context.getBean(methodInvocation.getServiceClass()));
+        }
+    }
 
     private void exportApiDocument() {
         if (apiEnabled) {

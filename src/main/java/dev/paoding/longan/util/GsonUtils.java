@@ -3,9 +3,8 @@ package dev.paoding.longan.util;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import dev.paoding.longan.annotation.Json;
-import dev.paoding.longan.service.BadRequestException;
+import dev.paoding.longan.service.UnexpectedJsonException;
 import dev.paoding.longan.service.I18nSyntaxException;
-import dev.paoding.longan.service.SystemException;
 import dev.paoding.longan.service.TypeFormatException;
 import dev.paoding.longan.channel.http.TimeZoneThreadLocal;
 import dev.paoding.longan.data.jpa.BeanProxyTypeAdapterFactory;
@@ -259,7 +258,7 @@ public class GsonUtils {
         try {
             return gson.fromJson(jsonElement, type);
         } catch (JsonSyntaxException e) {
-            throw new SystemException(e.getCause().getMessage());
+            throw new UnexpectedJsonException(e.getCause().getMessage());
         }
 
     }
@@ -281,7 +280,7 @@ public class GsonUtils {
             return gson.fromJson(json, new TypeToken<Map<String, JsonElement>>() {
             }.getType());
         } catch (JsonSyntaxException e) {
-            throw new BadRequestException();
+            throw new UnexpectedJsonException();
         }
     }
 

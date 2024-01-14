@@ -115,12 +115,15 @@ public class ParameterValidator {
      * @param validatorMap
      */
     private void validateEntity(Class<?> type, Object object, String qualifiedName, int validatorId, Map<String, Validator> validatorMap) {
+        if (object == null) {
+            return;
+        }
         BeanMap beanMap = BeanMap.create(object);
         Validator validator = validatorMap.get(type.getName() + validatorId);
-        //todo 等增加了启动检查，删除这个检查
-        if (validator == null) {
-            throw new InternalServerException("not found @Validator for " + type.getName());
-        }
+//        //todo 等增加了启动检查，删除这个检查
+//        if (validator == null) {
+//            throw new InternalServerException("not found @Validator for " + type.getName());
+//        }
         for (Validate validate : validator.validates()) {
             Field field = TypeUtils.getField(type, validate.name());
             validateFiled(field, beanMap.get(validate.name()), qualifiedName, validate, validatorMap);

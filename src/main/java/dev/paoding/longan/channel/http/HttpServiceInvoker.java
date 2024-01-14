@@ -2,12 +2,14 @@ package dev.paoding.longan.channel.http;
 
 import com.google.gson.JsonElement;
 import dev.paoding.longan.annotation.RequestBody;
-import dev.paoding.longan.core.MethodDescriptor;
 import dev.paoding.longan.core.MethodInvocation;
 import dev.paoding.longan.core.Result;
 import dev.paoding.longan.core.ServiceInvoker;
 import dev.paoding.longan.data.Between;
-import dev.paoding.longan.service.*;
+import dev.paoding.longan.service.DuplicateParameterException;
+import dev.paoding.longan.service.MethodNotAllowedException;
+import dev.paoding.longan.service.SystemException;
+import dev.paoding.longan.service.UnsupportedMediaTypeException;
 import dev.paoding.longan.util.GsonUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -22,13 +24,9 @@ import org.springframework.util.AntPathMatcher;
 
 import java.io.IOException;
 import java.lang.reflect.Parameter;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 @Slf4j
@@ -36,30 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HttpServiceInvoker extends ServiceInvoker {
     private final AntPathMatcher matcher = new AntPathMatcher();
 
-//    private String[] parseURI(String uri) {
-//        uri = URLDecoder.decode(uri, StandardCharsets.UTF_8);
-//        int i = uri.indexOf("?");
-//        if (i > 0) {
-//            return new String[]{uri.substring(0, i), uri.substring(i + 1)};
-//        } else {
-//            return new String[]{uri};
-//        }
-//    }
-
     public Result invokeService(MethodInvocation methodInvocation, String path, String query, FullHttpRequest httpRequest) throws SystemException {
-//        String uri = httpRequest.uri().substring(4);
-//        String[] array = parseURI(uri);
-//        String path = array[0];
-//        String query = null;
-//        if (array.length > 1) {
-//            query = array[1];
-//        }
-
-//        MethodInvocation methodInvocation = findMethodInvocation(httpRequest.method(), path);
-//        if (methodInvocation == null) {
-//            throw new MethodNotFoundException(path + " not found");
-//        }
-
         HttpMethod httpMethod = httpRequest.method();
         String contentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
         HttpDataEntity httpDataEntity = parseQueryParameter(methodInvocation.getPath(), path, query);
@@ -76,13 +51,12 @@ public class HttpServiceInvoker extends ServiceInvoker {
             if (isApplicationJson) {
                 if (methodInvocation.hasRequestBody()) {
                     arguments = parseArguments(methodInvocation, httpDataEntity, true, httpRequest.content());
-                    return invoke(methodInvocation, arguments);
                 } else {
                     String body = httpRequest.content().toString(CharsetUtil.UTF_8);
                     Map<String, JsonElement> jsonElementMap = GsonUtils.toMap(body);
                     arguments = parseArguments(methodInvocation, httpDataEntity, jsonElementMap);
-                    return invoke(methodInvocation, arguments);
                 }
+                return invoke(methodInvocation, arguments);
             } else if (HttpPostRequestDecoder.isMultipart(httpRequest)) {
                 HttpDataFactory factory = new DefaultHttpDataFactory(true);
                 HttpPostMultipartRequestDecoder decoder = new HttpPostMultipartRequestDecoder(factory, httpRequest);

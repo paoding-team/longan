@@ -1,15 +1,15 @@
 package dev.paoding.longan.service;
 
 
+import dev.paoding.longan.channel.http.HttpRequestException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 
-public class AuthorizationException extends ServiceException {
-    private static final long serialVersionUID = 0L;
+public class AuthorizationException extends HttpRequestException {
 
     public AuthorizationException(String message) {
         super(message);
-        this.code = "";
+        this.code = "FORBIDDEN";
     }
 
     @Override

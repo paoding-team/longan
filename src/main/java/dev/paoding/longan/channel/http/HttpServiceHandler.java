@@ -93,19 +93,11 @@ public class HttpServiceHandler extends AbstractServiceHandler {
         } catch (ServiceException e) {
             logger.info("A ServiceException occurred in the request", e);
             MethodInvocation methodInvocation = e.getMethodInvocation();
-            if (APPLICATION_JSON.toString().equals(methodInvocation.getResponseType())) {
-                return writeJson(httpVersion, e.getHttpResponseStatus(), ExceptionResult.of(e));
-            } else {
-                return writeText(httpVersion, e.getHttpResponseStatus(), e.getMessage());
-            }
+            return handelException(methodInvocation, httpVersion, e.getHttpResponseStatus(), ExceptionResult.of(e), e.getMessage());
         } catch (InternalServerException e) {
             logger.info("A InternalServerException occurred in the request", e);
             MethodInvocation methodInvocation = e.getMethodInvocation();
-            if (APPLICATION_JSON.toString().equals(methodInvocation.getResponseType())) {
-                return writeJson(httpVersion, e.getHttpResponseStatus(), ExceptionResult.of(e));
-            } else {
-                return writeText(httpVersion, e.getHttpResponseStatus(), e.getMessage());
-            }
+            return handelException(methodInvocation, httpVersion, e.getHttpResponseStatus(), ExceptionResult.of(e), e.getMessage());
         } catch (MethodNotFoundException e) {
             logger.warn(e.getMessage());
             return writeText(httpVersion, e.getHttpResponseStatus(), e.getMessage());
@@ -116,6 +108,18 @@ public class HttpServiceHandler extends AbstractServiceHandler {
             return writeText(httpVersion, HttpResponseStatus.INTERNAL_SERVER_ERROR, HttpResponseStatus.INTERNAL_SERVER_ERROR.codeAsText().toString());
         } finally {
             handlerInterceptor.afterCompletion();
+        }
+    }
+
+    private FullHttpResponse handelException(MethodInvocation methodInvocation, HttpVersion httpVersion, HttpResponseStatus httpResponseStatus,
+                                             ExceptionResult exceptionResult, String message) {
+        if (methodInvocation == null) {
+            return writeText(httpVersion, httpResponseStatus, message);
+        }
+        if (APPLICATION_JSON.toString().equals(methodInvocation.getResponseType())) {
+            return writeJson(httpVersion, httpResponseStatus, exceptionResult);
+        } else {
+            return writeText(httpVersion, httpResponseStatus, message);
         }
     }
 

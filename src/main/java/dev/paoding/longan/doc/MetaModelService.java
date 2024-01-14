@@ -39,7 +39,7 @@ public class MetaModelService {
 
     public static void load() {
 //        List<Class<?>> classList = LonganClassScanner.getEntityClassList();
-        List<Class<?>> classList = ClassPathBeanScanner.getAllEentityClassList();
+        List<Class<?>> classList = ClassPathBeanScanner.getAllEntityClasses();
         for (Class<?> type : classList) {
             if (type.isAnnotationPresent(Entity.class)) {
 //                if(type.getName().endsWith("Entity")) {

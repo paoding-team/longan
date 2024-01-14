@@ -6,8 +6,6 @@ import dev.paoding.longan.data.Entity;
 import dev.paoding.longan.data.jpa.JpaRepositoryProxy;
 import dev.paoding.longan.data.jpa.MetaTableFactory;
 import dev.paoding.longan.data.jpa.JpaRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -21,11 +19,10 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class ClassPathBeanScanner {
-    private static final Logger logger = LoggerFactory.getLogger(ClassPathBeanScanner.class);
-    private final static List<Class<?>> allEentityClassList = new ArrayList<>();
-    private final static List<Class<?>> moduleEentityClassList = new ArrayList<>();
-    private final static List<Class<?>> repositoryClassList = new ArrayList<>();
-    private final static List<ServiceDescriptor> serviceClassList = new ArrayList<>();
+    private final static List<Class<?>> allEntityClasses = new ArrayList<>();
+    private final static List<Class<?>> projectEntityClasses = new ArrayList<>();
+    private final static List<Class<?>> repositoryClasses = new ArrayList<>();
+    private final static List<ServiceDescriptor> serviceClasses = new ArrayList<>();
     private static Class<?> handlerInterceptor;
 
     public ClassPathBeanScanner(Set<String> candidatePackages) {
@@ -64,7 +61,7 @@ public class ClassPathBeanScanner {
                     if (!allCache.contains(clazz.getName())) {
                         allCache.add(clazz.getName());
                         if (clazz.isAnnotationPresent(Entity.class)) {
-                            allEentityClassList.add(clazz);
+                            allEntityClasses.add(clazz);
                         }
                     }
                     if (!moduleCache.contains(clazz.getName())) {
@@ -73,8 +70,8 @@ public class ClassPathBeanScanner {
                             Type type = ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
                             Class<?> modelClass = (Class<?>) type;
                             if (modelClass.isAnnotationPresent(Entity.class)) {
-                                moduleEentityClassList.add(modelClass);
-                                repositoryClassList.add(clazz);
+                                projectEntityClasses.add(modelClass);
+                                repositoryClasses.add(clazz);
                             }
                         } else if (clazz.isAnnotationPresent(RpcService.class)) {
                             Type genericSuperclass = clazz.getGenericSuperclass();
@@ -83,8 +80,7 @@ public class ClassPathBeanScanner {
                                 for (Type actualTypeArgument : actualTypeArguments) {
                                     Class<?> modelClass = (Class<?>) actualTypeArgument;
                                     if (modelClass.isAnnotationPresent(Entity.class)) {
-                                        moduleEentityClassList.add(modelClass);
-                                        serviceClassList.add(new ServiceDescriptor(clazz));
+                                        serviceClasses.add(new ServiceDescriptor(clazz));
                                         break;
                                     }
                                 }
@@ -105,20 +101,20 @@ public class ClassPathBeanScanner {
         return handlerInterceptor;
     }
 
-    public static List<Class<?>> getModuleEntityClassList() {
-        return moduleEentityClassList;
+    public static List<Class<?>> getProjectEntityClasses() {
+        return projectEntityClasses;
     }
 
-    public static List<Class<?>> getAllEentityClassList() {
-        return allEentityClassList;
+    public static List<Class<?>> getAllEntityClasses() {
+        return allEntityClasses;
     }
 
-    public static List<Class<?>> getRepositoryClassList() {
-        return repositoryClassList;
+    public static List<Class<?>> getRepositoryClasses() {
+        return repositoryClasses;
     }
 
-    public static List<ServiceDescriptor> getServiceClassList() {
-        return serviceClassList;
+    public static List<ServiceDescriptor> getServiceClasses() {
+        return serviceClasses;
     }
 
     private static Class<?> loadClass(ClassLoader loader, MetadataReaderFactory readerFactory, Resource resource) {

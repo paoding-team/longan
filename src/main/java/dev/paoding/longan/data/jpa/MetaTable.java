@@ -392,7 +392,7 @@ public class MetaTable<T> {
     public List<String> generateCreateSql() {
         List<String> sqlList = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        sb.append("\ncreate table ").append(this.name).append(" (\n\t");
+        sb.append("\nCREATE TABLE ").append(this.name).append(" (\n\t");
         if (primaryKey != null) {
             sb.append(primaryKey.generateText());
         }
@@ -404,11 +404,11 @@ public class MetaTable<T> {
         sb.append("\n)");
         sqlList.add(sb.toString());
 
-        for (MetaColumn metaColumn : metaColumnList) {
-            if (metaColumn.isUnique()) {
-                sqlList.add("create unique index uidx_" + name + "_" + metaColumn.getName() + " on " + name + " (" + metaColumn.getName() + ")");
-            }
-        }
+//        for (MetaColumn metaColumn : metaColumnList) {
+//            if (metaColumn.isUnique()) {
+//                sqlList.add("CREATE UNIQUE INDEX uk_" + name + "_" + metaColumn.getName() + " ON " + name + " (" + metaColumn.getName() + ")");
+//            }
+//        }
 
         return sqlList;
     }
