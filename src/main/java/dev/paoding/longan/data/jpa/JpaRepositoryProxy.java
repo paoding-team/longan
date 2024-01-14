@@ -80,7 +80,6 @@ public class JpaRepositoryProxy<T, ID> implements InvocationHandler, JpaReposito
             Map<String, Object> paramMap = SqlParser.toMap(method, args);
             Query query = method.getAnnotation(Query.class);
             String sql = query.value().trim();
-//            if (sql.startsWith("select")) {
             if (query.dynamic()) {
                 sql = SqlParser.parseDynamicSql(sql, paramMap);
             } else {
@@ -99,10 +98,13 @@ public class JpaRepositoryProxy<T, ID> implements InvocationHandler, JpaReposito
             } else {
                 return EntityUtils.wrap(metaTable, jdbcSession.queryForObject(sql, paramMap, metaTable.getRowMapper()));
             }
-//            }
-//            else {
-//                return jdbcSession.update(sql, paramMap);
-//            }
+        }
+
+        if (method.isAnnotationPresent(Update.class)) {
+            Map<String, Object> paramMap = SqlParser.toMap(method, args);
+            Update query = method.getAnnotation(Update.class);
+            String sql = query.value().trim();
+            return jdbcSession.update(sql, paramMap);
         }
 
         Parameter[] parameters = method.getParameters();
