@@ -2,9 +2,11 @@ package dev.paoding.longan.core;
 
 import com.google.common.base.Throwables;
 import dev.paoding.longan.data.DataNotFoundException;
+import dev.paoding.longan.service.DuplicateException;
 import dev.paoding.longan.service.InternalServerException;
 import dev.paoding.longan.service.ServiceException;
 import dev.paoding.longan.channel.http.ByteFile;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,6 +41,8 @@ public abstract class ServiceInvoker extends ResponseFilter {
                 throw (ServiceException) throwable;
             } else if (clazz == EmptyResultDataAccessException.class) {
                 throw new DataNotFoundException("data not found");
+            } else if (clazz == DuplicateKeyException.class) {
+                throw new DuplicateException("duplicate entry");
             } else {
                 InternalServerException internalServerException = new InternalServerException(throwable.getMessage());
                 internalServerException.setStackTrace(throwable.getStackTrace());
