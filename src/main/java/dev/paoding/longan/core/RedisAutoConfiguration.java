@@ -3,7 +3,6 @@ package dev.paoding.longan.core;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.EnvironmentAware;
@@ -15,9 +14,7 @@ import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.lang.NonNull;
 
 import java.time.Duration;
@@ -35,7 +32,6 @@ public class RedisAutoConfiguration implements ImportBeanDefinitionRegistrar, En
         RedisConnectionFactory redisConnectionFactory = redisConnectionFactory();
         DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) registry;
         defaultListableBeanFactory.registerSingleton("redisConnectionFactory", redisConnectionFactory);
-        defaultListableBeanFactory.registerSingleton("redisTemplate", redisTemplate(redisConnectionFactory));
         defaultListableBeanFactory.registerSingleton("stringRedisTemplate", stringRedisTemplate(redisConnectionFactory));
     }
 
@@ -51,11 +47,11 @@ public class RedisAutoConfiguration implements ImportBeanDefinitionRegistrar, En
         poolConfig.setMaxTotal(Integer.parseInt(environment.getProperty("longan.redis.pool.total.max", "100")));
         poolConfig.setMinIdle(Integer.parseInt(environment.getProperty("longan.redis.pool.idle.min", "10")));
         poolConfig.setMaxIdle(Integer.parseInt(environment.getProperty("longan.redis.pool.idle.max", "20")));
-        poolConfig.setMaxWaitMillis(Integer.parseInt(environment.getProperty("longan.redis.pool.wait.max", "1000")));
+        poolConfig.setMaxWait(Duration.ofMillis(Integer.parseInt(environment.getProperty("longan.redis.pool.wait.max", "1000"))));
 
         LettucePoolingClientConfiguration.LettucePoolingClientConfigurationBuilder builder = LettucePoolingClientConfiguration.builder();
         builder.poolConfig(poolConfig);
-        builder.commandTimeout(Duration.ofSeconds(Integer.parseInt(environment.getProperty("longan.redis.command.timout", "10"))));
+        builder.commandTimeout(Duration.ofSeconds(Integer.parseInt(environment.getProperty("longan.redis.command.timeout", "10"))));
         builder.clientResources(clientResources);
         LettuceConnectionFactory connectionFactory = new LettuceConnectionFactory(configuration, builder.build());
         connectionFactory.afterPropertiesSet();
@@ -63,18 +59,9 @@ public class RedisAutoConfiguration implements ImportBeanDefinitionRegistrar, En
         return connectionFactory;
     }
 
-    private RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Object, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
-        return template;
-    }
 
     private StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        StringRedisTemplate template = new StringRedisTemplate();
-        template.setConnectionFactory(redisConnectionFactory);
-        return template;
+        return new StringRedisTemplate(redisConnectionFactory);
     }
 
 }
