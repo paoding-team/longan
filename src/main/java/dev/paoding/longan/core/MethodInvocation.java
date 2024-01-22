@@ -7,6 +7,7 @@ import dev.paoding.longan.service.UnsupportedParameterTypeException;
 import dev.paoding.longan.channel.http.HttpDataEntity;
 import dev.paoding.longan.channel.http.RequestParameterException;
 import dev.paoding.longan.util.GsonUtils;
+import dev.paoding.longan.validation.BeanCleaner;
 import dev.paoding.longan.validation.ParameterValidator;
 import io.netty.buffer.ByteBuf;
 
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MethodInvocation extends ParameterValidator {
+    private final BeanCleaner beanCleaner = new BeanCleaner();
     private final Map<String, Validator> validatorMap = new HashMap<>();
     private final Map<String, Param> paramMap = new HashMap<>();
     private Class<?> serviceInterface;
@@ -29,7 +31,7 @@ public class MethodInvocation extends ParameterValidator {
     private boolean hasRequestBody;
     private Parameter[] parameters;
 
-    public MethodInvocation(Class<?> serviceClass,MethodDescriptor methodDescriptor, String path) {
+    public MethodInvocation(Class<?> serviceClass, MethodDescriptor methodDescriptor, String path) {
         this.path = path;
         this.serviceClass = serviceClass;
         this.method = methodDescriptor.getMethod();
@@ -108,6 +110,7 @@ public class MethodInvocation extends ParameterValidator {
                 e.setResponseType(this.responseType);
                 throw e;
             }
+            beanCleaner.cleanParameter(parameter, argument, param, validatorMap);
         } else {
             //todo 没有验证参数
         }

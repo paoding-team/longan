@@ -10,6 +10,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,10 +28,10 @@ import javax.annotation.Resource;
  * channelUnregistered: channel取消和NioEventLoop的绑定
  * handlerRemoved: handler从channel的pipeline中移除
  */
+@Slf4j
 @Component
 @ChannelHandler.Sharable
 public class HttpServerHandler extends ChannelInboundHandlerAdapter {
-    private final Logger logger = LoggerFactory.getLogger(HttpServerHandler.class);
     @Resource
     private HttpHandler httpHandler;
     @Resource
@@ -62,7 +63,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        logger.error("connection cause exception", cause);
+        log.error("connection cause exception", cause);
         ctx.close();
     }
 
@@ -75,5 +76,6 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
+        log.info("{} channelInactive", ctx.channel().id().asLongText());
     }
 }

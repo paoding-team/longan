@@ -11,6 +11,7 @@ import dev.paoding.longan.service.MethodNotAllowedException;
 import dev.paoding.longan.service.SystemException;
 import dev.paoding.longan.service.UnsupportedMediaTypeException;
 import dev.paoding.longan.util.GsonUtils;
+import dev.paoding.longan.validation.BeanCleaner;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
