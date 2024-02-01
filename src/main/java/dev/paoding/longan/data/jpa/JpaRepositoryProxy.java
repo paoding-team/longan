@@ -677,7 +677,23 @@ public class JpaRepositoryProxy<T, ID> implements InvocationHandler, JpaReposito
         return 0;
     }
 
-//    @Override
+    @Override
+    public boolean exists(T source, Object target) {
+        return exists(source, target, "");
+    }
+
+    @Override
+    public boolean exists(T source, Object target, String role) {
+        String startName = SqlParser.toDatabaseName(source.getClass().getSimpleName());
+        String endName = SqlParser.toDatabaseName(target.getClass().getSimpleName());
+        Object startId = BeanMap.create(source).get("id");
+        Object endId = BeanMap.create(target).get("id");
+        Map<String, Object> paraMap = ImmutableMap.of(startName + "_id", startId, endName + "_id", endId);
+        String sql = SqlParser.toCountSql(startName, endName, role);
+        return jdbcSession.queryForLong(sql, paraMap) > 0;
+    }
+
+    //    @Override
 //    public int delete(String sql, Map<String, ?> paramMap) throws DataAccessException {
 //        return jdbcTemplate.update(sql, new MapSqlParameterSource(paramMap));
 //    }

@@ -43,7 +43,7 @@
         <spring.version>6.1.2</spring.version>
         <spring-boot.version>3.2.1</spring-boot.version>
         <spring-data-redis.version>3.2.1</spring-data-redis.version>
-        <slf4j.version>2.0.9</slf4j.version>
+        <slf4j.version>2.0.11</slf4j.version>
         <logback.version>1.4.14</logback.version>
     </properties>
 
@@ -95,12 +95,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
 

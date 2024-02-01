@@ -51,6 +51,10 @@ public interface JpaRepository<T, ID> {
 
     boolean exists(ID id);
 
+    boolean exists(T source, Object target);
+
+    boolean exists(T source, Object target, String role);
+
     T save(T entity);
 
     List<T> save(List<T> entityList);
