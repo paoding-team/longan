@@ -38,16 +38,21 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>true</skipTests>
-        <netty.version>4.1.105.Final</netty.version>
+        <netty.version>4.1.107.Final</netty.version>
         <dubbo.version>3.2.10</dubbo.version>
-        <spring.version>6.1.2</spring.version>
-        <spring-boot.version>3.2.1</spring-boot.version>
-        <spring-data-redis.version>3.2.1</spring-data-redis.version>
-        <slf4j.version>2.0.11</slf4j.version>
-        <logback.version>1.4.14</logback.version>
+        <spring.version>6.1.4</spring.version>
+        <spring-boot.version>3.2.3</spring-boot.version>
+        <spring-data-redis.version>3.2.3</spring-data-redis.version>
+        <slf4j.version>2.0.12</slf4j.version>
+        <logback.version>1.5.0</logback.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>4.8</version>
+        </dependency>
         <dependency>
             <groupId>org.burningwave</groupId>
             <artifactId>core</artifactId>
@@ -131,13 +136,13 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.3.0.RELEASE</version>
+            <version>6.3.1.RELEASE</version>
         </dependency>
 
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.1</version>
         </dependency>
 
         <dependency>
@@ -155,7 +160,7 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.30.1-GA</version>
+            <version>3.30.2-GA</version>
         </dependency>
 
         <dependency>
@@ -188,7 +193,7 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>8.2.0</version>
+            <version>8.3.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -208,7 +213,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.5.4</version>
+            <version>42.7.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -317,5 +322,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

@@ -63,7 +63,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("connection cause exception", cause);
+//        log.error("connection cause exception", cause);
         ctx.close();
     }
 
@@ -76,6 +76,6 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        log.info("{} channelInactive", ctx.channel().id().asLongText());
+//        log.info("{} channelInactive", ctx.channel().id().asLongText());
     }
 }

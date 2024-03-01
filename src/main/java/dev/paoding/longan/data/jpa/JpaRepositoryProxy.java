@@ -28,6 +28,7 @@ public class JpaRepositoryProxy<T, ID> implements InvocationHandler, JpaReposito
     private JdbcSession jdbcSession;
     private final Class<T> clazz;
     private final Snowflake snowflake = new Snowflake();
+    private final DynamicSqlParser dynamicSqlParser = new DynamicSqlParser();
 
     {
         methods = JpaRepository.class.getMethods();
@@ -81,9 +82,10 @@ public class JpaRepositoryProxy<T, ID> implements InvocationHandler, JpaReposito
             Query query = method.getAnnotation(Query.class);
             String sql = query.value().trim();
             if (query.dynamic()) {
-                sql = SqlParser.parseDynamicSql(sql, paramMap);
-            } else {
-                sql = SqlParser.parseStaticSql(sql, paramMap);
+//                sql = SqlParser.parseDynamicSql(sql, paramMap);
+                sql = dynamicSqlParser.parse(sql, paramMap);
+//            } else {
+//                sql = SqlParser.parseStaticSql(sql, paramMap);
             }
             if (paramMap.containsKey("pageable")) {
                 Pageable pageable = (Pageable) paramMap.get("pageable");

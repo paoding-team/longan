@@ -32,6 +32,7 @@ public class BeanCleaner {
     }
 
     private void cleanCollection(ParameterizedType parameterizedType, Object object, int validatorId, Map<String, Validator> validatorMap) {
+        if (object == null) return;
         Class<?> type = (Class<?>) parameterizedType.getActualTypeArguments()[0];
         if (type.isAnnotationPresent(Entity.class)) {
             Collection<?> collection = (Collection<?>) object;
@@ -42,6 +43,7 @@ public class BeanCleaner {
     }
 
     private void cleanEntity(Class<?> type, Object object, int validatorId, Map<String, Validator> validatorMap) {
+        if (object == null) return;
         Validator validator = validatorMap.get(type.getName() + validatorId);
         Validate[] validates = validator.validates();
         Map<String, Validate> propMap = new HashMap<>();
@@ -65,7 +67,7 @@ public class BeanCleaner {
                             if (boolean.class.isAssignableFrom(fieldType)) {
                                 field.set(object, false);
                             } else if (int.class.isAssignableFrom(fieldType) || long.class.isAssignableFrom(fieldType) || double.class.isAssignableFrom(fieldType) ||
-                                    float.class.isAssignableFrom(fieldType) || short.class.isAssignableFrom(fieldType)) {
+                                       float.class.isAssignableFrom(fieldType) || short.class.isAssignableFrom(fieldType)) {
                                 field.set(object, 0);
                             }
                         } else {

@@ -40,18 +40,20 @@ public class SqlParser {
                                 field.setAccessible(true);
                                 Object value = field.get(arg);
                                 if (value != null) {
-                                    paramMap.put(SqlParser.toDatabaseName(parameters[i].getName() + "_" + field.getName()), value);
+//                                    paramMap.put(SqlParser.toDatabaseName(parameters[i].getName() + "_" + field.getName()), value);
+                                    paramMap.put(parameters[i].getName() + "." + field.getName(), value);
                                 }
                             }
                         }
-                    } else if (Between.class.isAssignableFrom(arg.getClass())) {
-                        Between<?> between = (Between<?>) arg;
-                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName() + "_start"), between.getStart());
-                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName() + "_end"), between.getEnd());
-                    } else if (type.isArray()) {
-                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName()), Database.createArrayOf(arg));
+//                    } else if (Between.class.isAssignableFrom(arg.getClass())) {
+//                        Between<?> between = (Between<?>) arg;
+//                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName() + "_start"), between.getStart());
+//                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName() + "_end"), between.getEnd());
+//                    } else if (type.isArray()) {
+//                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName()), Database.createArrayOf(arg));
                     } else {
-                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName()), arg);
+//                        paramMap.put(SqlParser.toDatabaseName(parameters[i].getName()), arg);
+                        paramMap.put(parameters[i].getName(), arg);
                     }
                 }
             }
@@ -273,7 +275,8 @@ public class SqlParser {
      * @return 解析后的 SQL
      */
     public static String parseDynamicSql(String sql, Map<String, Object> params) {
-        String regex = "[A-Za-z0-9_.]+\\s+(=|>|<|>=|<=|<>|like|is|in|not|not\\s+like|not\\s+in|between\\s+:(\\S+)\\?\\s+and)\\s+\\(?:(\\S+)\\?\\)?";
+//        String regex = "[A-Za-z0-9_.]+\\s+(=|>|<|>=|<=|<>|like|is|in|not|not\\s+like|not\\s+in|between\\s+:(\\S+)\\?\\s+and)\\s+\\(?:(\\S+)\\?\\)?";
+        String regex = "[A-Za-z0-9_.]+\\s+(=|>|<|>=|<=|<>|like|is|in|not|not\\s+like|not\\s+in|between\\s+:(\\S+)\\s+and)\\s+\\(?:(\\S+)\\)?";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(sql);
         while (matcher.find()) {
